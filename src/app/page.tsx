@@ -1,100 +1,337 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+// Custom Logo: Four irregular boxes (each a different color)
+function Logo() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="flex items-center space-x-1">
+      <div className="w-5 h-5 bg-red-500 transform rotate-[-5deg] skew-x-3 rounded-sm"></div>
+      <div className="w-5 h-5 bg-blue-500 transform rotate-3 skew-y-2 rounded-sm"></div>
+      <div className="w-5 h-5 bg-green-500 transform rotate-[-3deg] skew-x-2 rounded-sm"></div>
+      <div className="w-5 h-5 bg-yellow-500 transform rotate-2 skew-y-3 rounded-sm"></div>
+    </div>
+  );
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function HomePage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Update navbar background when scrolling past 100px.
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 100);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
+
+  return (
+    <div className="bg-black">
+      {/* Navbar */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+          scrolled ? "bg-gray-800" : "bg-black"
+        }`}
+      >
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <Image src="/rio.png" alt="Logo" width={50} height={50} />
+            <span className="text-2xl font-bold">
+              Your <span className="text-red-500">Coaching</span>
+            </span>
+          </div>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-6 text-lg">
+            <Link href="#hero" className="hover:text-red-500">
+              Home
+            </Link>
+            <Link href="#about" className="hover:text-red-500">
+              About
+            </Link>
+            <Link href="#services" className="hover:text-red-500">
+              Services
+            </Link>
+            <Link href="#testimonials" className="hover:text-red-500">
+              Testimonials
+            </Link>
+            <Link href="#contact" className="hover:text-red-500">
+              Contact
+            </Link>
+          </nav>
+          {/* Mobile Hamburger */}
+          <div className="md:hidden">
+            <button onClick={toggleMobileMenu} className="focus:outline-none text-white">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileMenuOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+        {mobileMenuOpen && (
+          <nav className="md:hidden bg-black">
+            <div className="px-4 py-2 space-y-2">
+              <Link
+                href="#hero"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block hover:text-red-500"
+              >
+                Home
+              </Link>
+              <Link
+                href="#about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block hover:text-red-500"
+              >
+                About
+              </Link>
+              <Link
+                href="#services"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block hover:text-red-500"
+              >
+                Services
+              </Link>
+              <Link
+                href="#testimonials"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block hover:text-red-500"
+              >
+                Testimonials
+              </Link>
+              <Link
+                href="#contact"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block hover:text-red-500"
+              >
+                Contact
+              </Link>
+            </div>
+          </nav>
+        )}
+      </header>
+
+      {/* Hero Section: Fullscreen background image with only the logo */}
+      <section id="hero" className="relative h-screen">
+        <Image
+          src="/rio.png"
+          alt="Hero Background"
+          fill
+          style={{ objectFit: "cover" }}
+          className="filter grayscale"
+        />
+        {/* Centered Logo */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Logo />
+        </div>
+      </section>
+
+      {/* Conversion Section: Persuasive copy to convert cold visitors */}
+      <section id="conversion" className="py-20">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            Transform Your <span className="text-red-500">Body & Life</span>
+          </h2>
+          <p className="max-w-2xl mx-auto text-gray-300 text-lg mb-8">
+            Discover the proven fitness strategies that turn hard work into rapid results.
+            Our personalized coaching system is designed to help you achieve peak performance
+            and unlock your ultimate potential. With our expert guidance, every workout propels you closer to your dream physique.
+          </p>
+          <Link
+            href="#contact"
+            className="inline-block bg-red-500 hover:bg-red-600 text-white py-3 px-8 rounded-full text-xl font-semibold"
+          >
+            Book Your Free Consultation Now
+          </Link>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section id="about" className="py-20">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            About <span className="text-red-500">Us</span>
+          </h2>
+          <p className="max-w-2xl mx-auto text-gray-300 text-lg">
+            At <span className="font-semibold text-red-500">Your Coaching</span>, we blend expert fitness training with a passion for health.
+            Our mission is to empower you to reach new heights, both physically and mentally.
+            Experience a revolutionary approach to fitness that drives real, measurable results.
+          </p>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section id="services" className="py-20 bg-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold">
+              Our <span className="text-red-500">Services</span>
+            </h2>
+            <p className="text-gray-300 text-lg">
+              Elevate your training with personalized programs designed for{" "}
+              <span className="font-semibold text-red-500">optimal results</span>.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-gray-800 p-6 rounded-lg">
+              <h3 className="text-2xl font-bold mb-2">
+                Personal <span className="text-red-500">Training</span>
+              </h3>
+              <p className="text-gray-400">
+                Customized one-on-one sessions focused on your unique fitness goals.
+              </p>
+            </div>
+            <div className="bg-gray-800 p-6 rounded-lg">
+              <h3 className="text-2xl font-bold mb-2">
+                Group <span className="text-red-500">Classes</span>
+              </h3>
+              <p className="text-gray-400">
+                High-energy group workouts that keep you motivated and accountable.
+              </p>
+            </div>
+            <div className="bg-gray-800 p-6 rounded-lg">
+              <h3 className="text-2xl font-bold mb-2">
+                Nutrition <span className="text-red-500">Coaching</span>
+              </h3>
+              <p className="text-gray-400">
+                Expert nutritional advice tailored to fuel your workouts and accelerate recovery.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold">
+              What They <span className="text-red-500">Say</span>
+            </h2>
+            <p className="text-gray-300 text-lg">
+              Hear from our clients who have transformed their lives.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-gray-800 p-6 rounded-lg">
+              <p className="text-gray-400 italic mb-4">
+                "The personalized approach at <span className="font-semibold text-red-500">Your Coaching</span> helped me break through my plateau and achieve the body I've always wanted."
+              </p>
+              <div className="flex items-center">
+                <Image
+                  src="/rio.png"
+                  alt="Client 1"
+                  width={50}
+                  height={50}
+                  className="rounded-full"
+                />
+                <div className="ml-4">
+                  <p className="font-bold">John Doe</p>
+                  <p className="text-gray-500 text-sm">Fitness Enthusiast</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-800 p-6 rounded-lg">
+              <p className="text-gray-400 italic mb-4">
+                "Their coaching transformed not just my physique, but my mindset. I now believe in achieving the impossible."
+              </p>
+              <div className="flex items-center">
+                <Image
+                  src="/rio.png"
+                  alt="Client 2"
+                  width={50}
+                  height={50}
+                  className="rounded-full"
+                />
+                <div className="ml-4">
+                  <p className="font-bold">Jane Smith</p>
+                  <p className="text-gray-500 text-sm">Athlete</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 bg-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold">
+              Get in <span className="text-red-500">Touch</span>
+            </h2>
+            <p className="text-gray-300 text-lg">
+              Ready to unlock your ultimate potential? Contact us now for a free consultation.
+            </p>
+          </div>
+          <form className="max-w-xl mx-auto space-y-6">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium">
+                Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                placeholder="Your Name"
+                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 px-3 py-2 text-white"
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                placeholder="you@example.com"
+                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 px-3 py-2 text-white"
+              />
+            </div>
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium">
+                Message
+              </label>
+              <textarea
+                id="message"
+                rows={4}
+                placeholder="Your message"
+                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 px-3 py-2 text-white"
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-red-500 hover:bg-red-600 py-3 rounded-full font-semibold"
+            >
+              Send Message
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 bg-black">
+        <div className="container mx-auto px-4 text-center text-gray-500">
+          &copy; {new Date().getFullYear()} Your Coaching. All rights reserved.
+        </div>
       </footer>
     </div>
   );

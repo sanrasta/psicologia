@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { SignInButton, UserButton, useUser } from "@clerk/nextjs"; // Import Clerk components
 
@@ -21,9 +22,23 @@ function Logo() {
 }
 
 export default function HomePage() {
+
+  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter(); // Get Next.js router for redirection
   const [scrolled, setScrolled] = useState(false);
-  const { isSignedIn } = useUser(); // Get sign-in status
+  const { isSignedIn, isLoaded } = useUser(); // Add isLoaded to check initial load
+
+  // Only redirect on initial sign in
+  useEffect(() => {
+    if (isLoaded && isSignedIn && window.location.pathname === '/') {
+      const hasVisitedHome = sessionStorage.getItem('hasVisitedHome');
+      if (!hasVisitedHome) {
+        sessionStorage.setItem('hasVisitedHome', 'true');
+        router.push("/events");
+      }
+    }
+  }, [isSignedIn, isLoaded, router]);
 
   // Update navbar background when scrolling past 100px.
   useEffect(() => {
@@ -37,6 +52,7 @@ export default function HomePage() {
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
 
   return (
+    <>
     <div className="bg-black overflow-auto"> {/* Ensures scrolling works */}
       {/* Navbar */}
       <header
@@ -59,6 +75,13 @@ export default function HomePage() {
             <a href="#services" className="hover:text-red-500">Services</a>
             <a href="#testimonials" className="hover:text-red-500">Testimonials</a>
             <a href="#contact" className="hover:text-red-500">Contact</a>
+            {isSignedIn ? (
+              <a href="/events" className="hover:text-red-500">Events</a>
+            ) : (
+              <SignInButton>
+                <button className="hover:text-red-500">Bookings</button>
+              </SignInButton>
+            )}
           </nav>
 
           {/* Mobile Hamburger */}
@@ -93,6 +116,13 @@ export default function HomePage() {
           <a href="#services" className="hover:text-red-500 transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>Services</a>
           <a href="#testimonials" className="hover:text-red-500 transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>Testimonials</a>
           <a href="#contact" className="hover:text-red-500 transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>Contact</a>
+          {isSignedIn ? (
+            <a href="/events" className="hover:text-red-500 transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>Events</a>
+          ) : (
+            <SignInButton>
+              <button className="hover:text-red-500 transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>Bookings</button>
+            </SignInButton>
+          )}
         </nav>
       </div>
 
@@ -315,5 +345,6 @@ export default function HomePage() {
 </section>
 
     </div>
+    </>
   );
 }

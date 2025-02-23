@@ -4,6 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/drizzle/db";
 import { notFound } from "next/navigation";
 
+export const revalidate = 0;
+
 export default async function EditEventPage({
   params: { eventId },
 }: {

@@ -1,4 +1,4 @@
-CREATE TYPE "public"."day" AS ENUM('monday', 'tuesday', 'wenesday', 'thursday', 'friday', 'saturday', 'sunday');--> statement-breakpoint
+CREATE TYPE "public"."day" AS ENUM('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');--> statement-breakpoint
 CREATE TABLE "events" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,

@@ -7,10 +7,11 @@ import { notFound } from "next/navigation";
 export const revalidate = 0;
 
 export default async function EditEventPage({
-  params: { eventId },
+  params,
 }: {
   params: { eventId: string };
 }) {
+  const { eventId } = await params;
   const { userId, redirectToSignIn } = await auth();
   
   if (!userId) {

@@ -151,7 +151,8 @@ export function EventForm({ event }: EventFormProps) {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction disabled={isDeletePending || form.formState.
+                            <AlertDialogAction 
+                            disabled={isDeletePending || form.formState.
                             isSubmitting}
                             variant="destructive"
                             onClick={() => {
@@ -168,10 +169,14 @@ export function EventForm({ event }: EventFormProps) {
                     </AlertDialogContent>
                 </AlertDialog>
             )}
-          <Button type="button" asChild variant="outline">
+             
+                        <Button disabled={isDeletePending || form.formState.
+                            isSubmitting} type="button" asChild 
+                        variant="outline">
             <Link href="/events">Cancel</Link>
           </Button>
-          <Button type="submit">Save</Button>
+          <Button disabled={isDeletePending || form.formState.
+                            isSubmitting} type="submit">Save</Button>
         </div>
       </form>
     </Form>

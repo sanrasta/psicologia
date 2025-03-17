@@ -1,10 +1,14 @@
 import { boolean, integer, pgTable, text, uuid, timestamp, index, pgEnum } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { DAYS_OF_WEEK_IN_ORDER } from "@/data/constants";
+import { serial } from "drizzle-orm/pg-core";
 
 // Common columns
 const createdAt = timestamp("createdAt").notNull().defaultNow();
 const updatedAt = timestamp("updatedAt").notNull().defaultNow().$onUpdate(() => new Date());
+
+// Create the day enum type to match your database
+export const dayEnum = pgEnum('day', DAYS_OF_WEEK_IN_ORDER)
 
 // Events Table
 export const EventTable = pgTable("events", {
@@ -13,9 +17,9 @@ export const EventTable = pgTable("events", {
     description: text("description"),
     durationInMinutes: integer("durationInMinutes").notNull(),
     clerkUserId: text("clerkUserId").notNull(),
-    isActive: boolean("isActive").notNull().default(true),
-    createdAt,
-    updatedAt
+    isActive: boolean("isActive").default(true).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => ({
     clerkUserIdIndex: index("clerkUserIdIndex").on(table.clerkUserId)
 }));
@@ -23,18 +27,15 @@ export const EventTable = pgTable("events", {
 // Schedules Table
 export const ScheduleTable = pgTable("schedules", {
     id: uuid("id").primaryKey().defaultRandom(),
-    timezone: text("timezone").notNull(),
     clerkUserId: text("clerkUserId").notNull().unique(),
-    createdAt,
-    updatedAt
+    timezone: text("timezone").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export const scheduleRelations = relations(ScheduleTable, ({many}) => ({
     availabilities: many(ScheduleAvailabilityTable)
 }))
-
-// Enum for days of the week
-export const scheduleDayOfWeekEnum = pgEnum("day", DAYS_OF_WEEK_IN_ORDER);
 
 // Schedule Availability Table
 export const ScheduleAvailabilityTable = pgTable("schedule_availabilities", {
@@ -42,8 +43,9 @@ export const ScheduleAvailabilityTable = pgTable("schedule_availabilities", {
     scheduleId: uuid("scheduleId")
         .notNull()
         .references(() => ScheduleTable.id, { onDelete: "cascade" }),
+    dayOfWeek: dayEnum("dayOfWeek").notNull(),
     startTime: text("startTime").notNull(),
-    dayOfWeek: scheduleDayOfWeekEnum("dayOfWeek").notNull(),
+    endTime: text("endTime").notNull(),
 });
 
 export const ScheduleAvailabilityRelations = relations(ScheduleAvailabilityTable, ({one}) =>({

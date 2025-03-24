@@ -283,7 +283,7 @@ export function MeetingForm({
             asChild
             variant="outline"
           >
-            <Link href={`/book/${clerkUserId}`}>Cancel</Link>
+            <Link href="/events">Cancel</Link>
           </Button>
           <Button disabled={submitting} type="submit">
             {submitting ? "Scheduling..." : "Schedule"}

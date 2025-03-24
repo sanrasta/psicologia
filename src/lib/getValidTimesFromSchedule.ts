@@ -8,15 +8,9 @@ import {
 } from "date-fns-tz"
 import {
   addMinutes,
+  addDays,
   areIntervalsOverlapping,
   format,
-  isFriday,
-  isMonday,
-  isSaturday,
-  isSunday,
-  isThursday,
-  isTuesday,
-  isWednesday,
   isWithinInterval,
   setHours,
   setMinutes,
@@ -42,7 +36,38 @@ export async function getValidTimesFromSchedule(
 
   if (schedule == null || !schedule.availabilities.length) {
     console.log("No schedule or availabilities found");
-    return []
+    
+    // Create default available times for all days
+    // This is a fallback when no schedule exists
+    const defaultAvailabilities: { start: Date; end: Date }[] = [];
+    const today = new Date();
+    
+    // Add default 6am-8pm slots for the next 3 weeks
+    for (let i = 0; i < 21; i++) {
+      const dayDate = addDays(today, i);
+      
+      const daySlot = {
+        start: setHours(setMinutes(dayDate, 0), 6), // 6:00 AM
+        end: setHours(setMinutes(dayDate, 0), 20)   // 8:00 PM
+      };
+      
+      defaultAvailabilities.push(daySlot);
+    }
+    
+    console.log(`Created default availabilities for next 3 weeks (6am-8pm)`);
+    
+    // Filter the original times against these default slots
+    return timesInOrder.filter(time => {
+      const timeWithDuration = addMinutes(time, event.durationInMinutes);
+      
+      // Check if this time fits in any default slot
+      const fitsInDefaultSlot = defaultAvailabilities.some(slot => 
+        isWithinInterval(time, slot) && 
+        isWithinInterval(addMinutes(time, event.durationInMinutes - 1), slot)
+      );
+      
+      return fitsInDefaultSlot;
+    });
   }
 
   console.log("Found schedule with timezone:", schedule.timezone);
@@ -101,17 +126,38 @@ function getAvailabilityIntervalsForDate(
   availabilities: typeof ScheduleAvailabilityTable.$inferSelect[],
   timezone: string
 ) {
-  // Get day name but handle the typo in the database (wendesday vs wednesday)
-  const dayName = format(date, 'EEEE').toLowerCase();
-  const dayOfWeek = dayName === 'wednesday' ? 'wendesday' : dayName;
+  // Use lowercase day of week and handle both 'wednesday' and 'wendesday' spellings
+  const dayOfWeek = format(date, 'EEEE').toLowerCase();
+  
+  // Log the day we're checking for
+  console.log(`Checking availability for ${dayOfWeek} on ${date.toISOString()}`);
   
   // Find availabilities that match this day
-  const dayAvailabilities = availabilities.filter(a => 
-    a.dayOfWeek.toLowerCase() === dayOfWeek
-  );
+  const dayAvailabilities = availabilities.filter(a => {
+    const availDay = a.dayOfWeek.toLowerCase();
+    // Check if the day matches, handling both spellings of Wednesday
+    return availDay === dayOfWeek || 
+           (dayOfWeek === 'wednesday' && availDay === 'wendesday') ||
+           (dayOfWeek === 'wendesday' && availDay === 'wednesday');
+  });
+
+  console.log(`Found ${dayAvailabilities.length} availability slots for ${dayOfWeek}`);
 
   if (dayAvailabilities.length === 0) {
-    return []
+    // If no availabilities for this day, create a default 6am-8pm slot
+    console.log(`No availabilities found for ${dayOfWeek}, using default 6am-8pm`);
+    
+    const start = fromZonedTime(
+      setMinutes(setHours(date, 6), 0),  // 6:00 AM
+      timezone
+    );
+    
+    const end = fromZonedTime(
+      setMinutes(setHours(date, 20), 0), // 8:00 PM
+      timezone
+    );
+    
+    return [{ start, end }];
   }
 
   // Convert availability time strings to actual intervals for this date

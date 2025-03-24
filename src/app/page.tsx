@@ -186,6 +186,20 @@ export default function HomePage() {
 
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
 
+  // First, let's update the scrollToTop function to be more robust
+  const scrollToTop = () => {
+    // Scroll to the absolute top of the page
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    
+    // Also update the URL to remove any hash fragments
+    if (window.location.hash) {
+      history.pushState('', document.title, window.location.pathname + window.location.search);
+    }
+  };
+
   return (
     <>
       <div className="bg-black overflow-auto">
@@ -214,20 +228,19 @@ export default function HomePage() {
 
             {/* Desktop Navigation */}
             <motion.nav 
-              className="hidden md:flex space-x-6 text-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4, staggerChildren: 0.1 }}
+              className="hidden md:flex space-x-6 text-lg items-center"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
             >
-              {["Home", "Services", "Testimonials", "Contact"].map((item, i) => (
-                <motion.a 
+              {["Services", "Testimonials", "Contact"].map((item, index) => (
+                <motion.a
                   key={item}
                   href={`#${item.toLowerCase()}`}
                   className="hover:text-red-500 relative group"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.2 + (i * 0.1) }}
-                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
                 >
                   {item}
                   <motion.span 
@@ -271,6 +284,17 @@ export default function HomePage() {
                   </SignInButton>
                 </motion.div>
               )}
+              <button 
+                className="hover:text-red-500 relative group"
+                onClick={scrollToTop}
+              >
+                Home
+                <motion.span 
+                  className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300"
+                  initial={{ width: "0%" }}
+                  whileHover={{ width: "100%" }}
+                />
+              </button>
             </motion.nav>
 
             {/* Mobile Hamburger */}
@@ -315,7 +339,7 @@ export default function HomePage() {
 
               {/* Navigation Links */}
               <nav className="flex flex-col space-y-6 text-3xl">
-                {["Home", "Services", "Testimonials", "Contact"].map((item, index) => (
+                {["Services", "Testimonials", "Contact"].map((item, index) => (
                   <motion.a
                     key={item}
                     href={`#${item.toLowerCase()}`}

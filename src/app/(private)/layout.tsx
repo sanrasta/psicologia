@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { UserButton } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
+import { Home } from "lucide-react";
 
 export default function PrivateLayout({
   children,
@@ -11,6 +12,9 @@ export default function PrivateLayout({
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  
+  const isEventsPage = pathname === "/events";
 
   // Update navbar background when scrolling past 100px
   useEffect(() => {
@@ -39,8 +43,12 @@ export default function PrivateLayout({
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6 text-lg">
-            <a href="/events" className="hover:text-red-500">Events</a>
-            <a href="/" className="hover:text-red-500">Home</a>
+            {!isEventsPage && (
+              <a href="/events" className="hover:text-red-500">Events</a>
+            )}
+            <a href="/" className="hover:text-red-500 flex items-center">
+              <Home className="w-5 h-5" />
+            </a>
           </nav>
 
           {/* Mobile Hamburger */}
@@ -74,8 +82,12 @@ export default function PrivateLayout({
           ✕
         </button>
         <nav className="flex flex-col space-y-6 text-3xl">
-          <a href="/events" className="hover:text-red-500 transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>Events</a>
-          <a href="/" className="hover:text-red-500 transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>Home</a>
+          {!isEventsPage && (
+            <a href="/events" className="hover:text-red-500 transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>Events</a>
+          )}
+          <a href="/" className="hover:text-red-500 transition-all duration-300 flex items-center justify-center" onClick={() => setMobileMenuOpen(false)}>
+            <Home className="w-8 h-8" />
+          </a>
         </nav>
       </div>
 

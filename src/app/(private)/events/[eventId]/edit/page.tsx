@@ -27,13 +27,25 @@ export default async function EditEventPage({
     return notFound();
   }
 
+  // Ensure locationType is one of the allowed values
+  let locationType: "virtual" | "in-person";
+  if (event.locationType === "virtual") {
+    locationType = "virtual";
+  } else {
+    locationType = "in-person";
+  }
+
   return (
-    <Card className="max-w-md mx-auto">
+    <Card className="max-w-md mx-auto bg-gray-800 text-white border-gray-700">
       <CardHeader>
         <CardTitle>Edit Event</CardTitle>
       </CardHeader>
       <CardContent>
-        <EventForm event={{ ...event, description: event.description || undefined }} />
+        <EventForm event={{ 
+          ...event, 
+          description: event.description || undefined,
+          locationType 
+        }} />
       </CardContent>
     </Card>
   );

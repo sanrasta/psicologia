@@ -1,22 +1,20 @@
 "use server"
-import { db } from "@/drizzle/db"
-import { getValidTimesFromSchedule } from "@/lib/getValidTimesFromSchedule"
-import { meetingActionSchema } from "@/schema/meetings"
+
+import { meetingFormSchema } from "@/schema/meetings"
 import { z } from "zod"
-import { createCalendarEvent } from "../googleCalendar"
-import { redirect } from "next/navigation"
-import { fromZonedTime } from "date-fns-tz"
+import { db } from "@/drizzle/db"
+import { MeetingTable, EventTable } from "@/drizzle/schema"
+import { createCalendarEvent } from "@/server/googleCalendar"
 import { revalidatePath } from "next/cache"
-import { MeetingTable } from "@/drizzle/schema"
 
 export async function createMeeting(
-  unsafeData: z.infer<typeof meetingActionSchema> & {
+  unsafeData: z.infer<typeof meetingFormSchema> & {
     eventId: string
     clerkUserId: string
-    isVirtual: boolean
+    isVirtual: boolean // Add this parameter
   }
 ) {
-  const { success, data } = meetingActionSchema.safeParse(unsafeData)
+  const { success, data } = meetingFormSchema.safeParse(unsafeData)
 
   if (!success) {
     return { error: true }
@@ -32,7 +30,7 @@ export async function createMeeting(
     return { error: true }
   }
 
-  // Create a calendar event
+  // Create a calendar event first
   try {
     const calendarEvent = await createCalendarEvent({
       clerkUserId: unsafeData.clerkUserId,
@@ -42,19 +40,18 @@ export async function createMeeting(
       startTime: data.startTime,
       durationInMinutes: event.durationInMinutes,
       eventName: event.name,
-      isVirtual: unsafeData.isVirtual
+      isVirtual: unsafeData.isVirtual // Pass the virtual flag to calendar creation
     })
 
-    // Store the meeting in the database
+    // Now, store the meeting in our database
     await db.insert(MeetingTable).values({
       name: data.guestName,
       email: data.guestEmail,
       notes: data.guestNotes,
       startTime: data.startTime,
       eventId: unsafeData.eventId,
-      calendarEventId: calendarEvent.id,
-      conferenceLink: calendarEvent.hangoutLink ?? null,
-      locationType: unsafeData.isVirtual ? "virtual" : "in-person",
+      calendarEventId: calendarEvent.id, // Store the Google Calendar event ID
+      conferenceLink: calendarEvent.hangoutLink ?? null, // Store the Google Meet link
     })
 
     revalidatePath(`/book/${unsafeData.clerkUserId}`)
@@ -63,4 +60,4 @@ export async function createMeeting(
     console.error("Error creating meeting:", error)
     return { error: true }
   }
-}
+} 

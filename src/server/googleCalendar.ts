@@ -48,6 +48,7 @@ export async function createCalendarEvent({
   guestNotes,
   durationInMinutes,
   eventName,
+  isVirtual,
 }: {
   clerkUserId: string
   guestName: string
@@ -56,6 +57,7 @@ export async function createCalendarEvent({
   guestNotes?: string | null
   durationInMinutes: number
   eventName: string
+  isVirtual: boolean
 }) {
   const oAuthClient = await getOAuthClient(clerkUserId)
   const clerk = await clerkClient()
@@ -63,6 +65,10 @@ export async function createCalendarEvent({
   if (calendarUser.primaryEmailAddress == null) {
     throw new Error("Clerk user has no email")
   }
+
+  const descriptionWithMeetingInfo = guestNotes 
+    ? `${isVirtual ? "VIRTUAL MEETING: Google Meet link will be provided in the calendar invitation." : "IN-PERSON MEETING"}\n\nAdditional Details: ${guestNotes}`
+    : `${isVirtual ? "VIRTUAL MEETING: Google Meet link will be provided in the calendar invitation." : "IN-PERSON MEETING"}`;
 
   const calendarEvent = await google.calendar("v3").events.insert({
     calendarId: "primary",
@@ -77,15 +83,22 @@ export async function createCalendarEvent({
           responseStatus: "accepted",
         },
       ],
-      description: guestNotes ? `Additional Details: ${guestNotes}` : undefined,
+      description: descriptionWithMeetingInfo,
       start: {
         dateTime: startTime.toISOString(),
       },
       end: {
         dateTime: addMinutes(startTime, durationInMinutes).toISOString(),
       },
-      summary: `${guestName} + ${calendarUser.fullName}: ${eventName}`,
+      summary: `${guestName} + ${calendarUser.fullName}: ${eventName} (${isVirtual ? "Virtual" : "In-Person"})`,
+      conferenceData: isVirtual ? {
+        createRequest: {
+          requestId: crypto.randomUUID(),
+          conferenceSolutionKey: { type: "hangoutsMeet" },
+        },
+      } : undefined,
     },
+    conferenceDataVersion: isVirtual ? 1 : 0,
   })
 
   return calendarEvent.data

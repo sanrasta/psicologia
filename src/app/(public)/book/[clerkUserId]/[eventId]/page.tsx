@@ -1,3 +1,4 @@
+import ClientBooking from "../components/ClientBooking"
 import { MeetingForm } from "@/components/forms/MeetingForm"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,7 +13,7 @@ import { db } from "@/drizzle/db"
 import { getValidTimesFromSchedule } from "@/lib/getValidTimesFromSchedule"
 import { clerkClient } from "@clerk/nextjs/server"
 import {
-  addMonths,
+  addWeeks,
   eachMinuteOfInterval,
   endOfDay,
   roundToNearestMinutes,
@@ -21,6 +22,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { createDefaultSchedule } from "@/server/actions/schedule"
 import { ScheduleAvailabilityTable } from "@/drizzle/schema"
+import { Video, MapPin } from "lucide-react"
 
 export const revalidate = 0
 
@@ -40,10 +42,19 @@ export default async function BookEventPage({
     return notFound();
   }
 
-  // Get the event by ID
+  // Get the event by ID but exclude locationType which doesn't exist yet
   const event = await db.query.EventTable.findFirst({
     where: ({ clerkUserId: userIdCol, isActive, id }, { eq, and }) =>
       and(eq(isActive, true), eq(userIdCol, clerkUserId), eq(id, eventId)),
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+      durationInMinutes: true,
+      isActive: true,
+      clerkUserId: true,
+      locationType: true,
+    }
   })
 
   if (!event) return notFound()
@@ -58,16 +69,8 @@ export default async function BookEventPage({
     with: { availabilities: true },
   })
 
-  if (schedule) {
-    // Just log what days are present
-    const existingDays = new Set(schedule.availabilities.map(a => a.dayOfWeek));
-    console.log("Existing days:", Array.from(existingDays));
-    
-    // Skip adding missing days - they're causing errors
-    // We'll handle this later with a proper database migration
-  } else {
+  if (!schedule) {
     // Still try to create a default schedule as fallback
-    console.log("No schedule found, creating default schedule...");
     await createDefaultSchedule();
   }
 
@@ -76,7 +79,7 @@ export default async function BookEventPage({
     nearestTo: 15,
     roundingMethod: "ceil",
   })
-  const endDate = endOfDay(addMonths(startDate, 2))
+  const endDate = endOfDay(addWeeks(startDate, 2))
 
   // Get valid scheduling times
   const validTimes = await getValidTimesFromSchedule(
@@ -92,23 +95,18 @@ export default async function BookEventPage({
   }
 
   return (
-    <Card className="max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>
-          Book {event.name} with {calendarUser.fullName}
-        </CardTitle>
-        {event.description && (
-          <CardDescription>{event.description}</CardDescription>
-        )}
-      </CardHeader>
-      <CardContent>
-        <MeetingForm
-          validTimes={validTimes}
-          eventId={event.id}
-          clerkUserId={clerkUserId}
-        />
-      </CardContent>
-    </Card>
+    <ClientBooking
+      event={event}
+      userName={calendarUser.fullName}
+      userId={clerkUserId}
+    >
+      <MeetingForm
+        validTimes={validTimes}
+        eventId={event.id}
+        clerkUserId={clerkUserId}
+        locationType={event.locationType}
+      />
+    </ClientBooking>
   )
 }
 
@@ -116,7 +114,11 @@ function NoTimeSlots({
   event,
   calendarUser,
 }: {
-  event: { name: string; description: string | null }
+  event: { 
+    name: string; 
+    description: string | null;
+    locationType?: string;
+  }
   calendarUser: { id: string; fullName: string | null }
 }) {
   return (

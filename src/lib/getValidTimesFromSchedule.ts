@@ -20,8 +20,6 @@ export async function getValidTimesFromSchedule(
   timesInOrder: Date[],
   event: { clerkUserId: string; durationInMinutes: number }
 ) {
-  console.log("Getting valid times for event:", event);
-  
   const start = timesInOrder[0]
   const end = timesInOrder.at(-1)
 
@@ -35,15 +33,13 @@ export async function getValidTimesFromSchedule(
   })
 
   if (schedule == null || !schedule.availabilities.length) {
-    console.log("No schedule or availabilities found");
-    
     // Create default available times for all days
     // This is a fallback when no schedule exists
     const defaultAvailabilities: { start: Date; end: Date }[] = [];
     const today = new Date();
     
-    // Add default 6am-8pm slots for the next 3 weeks
-    for (let i = 0; i < 21; i++) {
+    // Add default 6am-8pm slots for the next 2 weeks
+    for (let i = 0; i < 14; i++) {
       const dayDate = addDays(today, i);
       
       const daySlot = {
@@ -53,8 +49,6 @@ export async function getValidTimesFromSchedule(
       
       defaultAvailabilities.push(daySlot);
     }
-    
-    console.log(`Created default availabilities for next 3 weeks (6am-8pm)`);
     
     // Filter the original times against these default slots
     return timesInOrder.filter(time => {
@@ -70,15 +64,11 @@ export async function getValidTimesFromSchedule(
     });
   }
 
-  console.log("Found schedule with timezone:", schedule.timezone);
-  console.log("Availabilities:", schedule.availabilities.map(a => a.dayOfWeek));
-
   // Get calendar events to block out times
   const eventTimes = await getCalendarEventTimes(event.clerkUserId, {
     start,
     end,
   })
-  console.log(`Found ${eventTimes.length} existing calendar events`);
 
   // Get valid times based on schedule
   return timesInOrder.filter(time => {
@@ -129,9 +119,6 @@ function getAvailabilityIntervalsForDate(
   // Use lowercase day of week and handle both 'wednesday' and 'wendesday' spellings
   const dayOfWeek = format(date, 'EEEE').toLowerCase();
   
-  // Log the day we're checking for
-  console.log(`Checking availability for ${dayOfWeek} on ${date.toISOString()}`);
-  
   // Find availabilities that match this day
   const dayAvailabilities = availabilities.filter(a => {
     const availDay = a.dayOfWeek.toLowerCase();
@@ -141,12 +128,8 @@ function getAvailabilityIntervalsForDate(
            (dayOfWeek === 'wendesday' && availDay === 'wednesday');
   });
 
-  console.log(`Found ${dayAvailabilities.length} availability slots for ${dayOfWeek}`);
-
   if (dayAvailabilities.length === 0) {
     // If no availabilities for this day, create a default 6am-8pm slot
-    console.log(`No availabilities found for ${dayOfWeek}, using default 6am-8pm`);
-    
     const start = fromZonedTime(
       setMinutes(setHours(date, 6), 0),  // 6:00 AM
       timezone

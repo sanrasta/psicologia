@@ -12,6 +12,7 @@ import { clerkClient } from "@clerk/nextjs/server"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { formatEventDescription } from "@/lib/formatters"
+import { Video } from "lucide-react"
 
 export const revalidate = 0
 
@@ -36,6 +37,12 @@ export default async function UserEventsPage({
   const clerk = await clerkClient()
   const calendarUser = await clerk.users.getUser(clerkUserId)
 
+  // Use this optimization for the events displayed on the page
+  const optimizedEvents = events.map(event => ({
+    ...event,
+    formattedDuration: formatEventDescription(event.durationInMinutes)
+  }));
+
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader>
@@ -47,12 +54,18 @@ export default async function UserEventsPage({
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {events.map(event => (
+        {optimizedEvents.map(event => (
           <Card key={event.id} className="overflow-hidden">
             <CardHeader className="p-4">
               <CardTitle className="text-xl">{event.name}</CardTitle>
-              <CardDescription>
-                {formatEventDescription(event.durationInMinutes)}
+              <CardDescription className="flex items-center">
+                {event.formattedDuration}
+                {event.locationType === "virtual" && (
+                  <span className="ml-2 flex items-center text-blue-400">
+                    <Video className="h-3 w-3 mr-1" />
+                    Virtual
+                  </span>
+                )}
               </CardDescription>
             </CardHeader>
             {event.description && (

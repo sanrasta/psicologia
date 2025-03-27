@@ -18,6 +18,7 @@ export const EventTable = pgTable("events", {
     durationInMinutes: integer("durationInMinutes").notNull(),
     clerkUserId: text("clerkUserId").notNull(),
     isActive: boolean("isActive").default(true).notNull(),
+    locationType: text("locationType").notNull().default("in-person"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => ({
@@ -54,3 +55,18 @@ export const ScheduleAvailabilityRelations = relations(ScheduleAvailabilityTable
         references: [ScheduleTable.id]
     })
 }))
+
+export const MeetingTable = pgTable("meetings", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => EventTable.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  notes: text("notes"),
+  startTime: timestamp("start_time"),
+  calendarEventId: text("calendar_event_id"),
+  conferenceLink: text("conference_link"),
+  locationType: text("location_type").notNull().default("in-person"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})

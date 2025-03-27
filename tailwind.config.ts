@@ -64,7 +64,12 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+      dropShadow: {
+        'glow-red': '0 0 8px rgba(239, 68, 68, 0.6)',
+        'glow-blue': '0 0 8px rgba(59, 130, 246, 0.6)',
+        'glow-green': '0 0 8px rgba(34, 197, 94, 0.6)',
+      }
   	}
   },
   plugins: [require("tailwindcss-animate")],

@@ -18,29 +18,30 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { Textarea } from "../ui/textarea";
 import { Switch } from "../ui/switch";
-import { createEvent, updateEvent } from "@/server/actions/event";
+import { createEvent, updateEvent, deleteEvent } from "@/server/actions/event";
 import { useState, useTransition } from "react";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "../ui/alert-dialog";
-import { deleteEvent } from "@/server/actions/event";
+import { Video, MapPin } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 type EventFormProps = {
-  event?: {
+  event?: z.infer<typeof EventFormSchema> & {
     id: string;
-    name: string;
-    durationInMinutes: number;
-    description?: string;
-    isActive: boolean;
+    locationType?: string;
   };
 };
 
 export function EventForm({ event }: EventFormProps) {
-    const [isDeletePending, startDeleteTransition] = useTransition();
+  const [isDeletePending, startDeleteTransition] = useTransition();
+  const [deleting, setDeleting] = useState(false);
   const form = useForm<z.infer<typeof EventFormSchema>>({
     resolver: zodResolver(EventFormSchema),
-    defaultValues: event ?? {
-      name: "",
-      isActive: true,
-      durationInMinutes: 30,
+    defaultValues: {
+      name: event?.name ?? "",
+      description: event?.description ?? "",
+      durationInMinutes: event?.durationInMinutes ?? 30,
+      isActive: event?.isActive ?? true,
+      locationType: event?.locationType ?? "in-person",
     },
   });
 
@@ -54,9 +55,15 @@ export function EventForm({ event }: EventFormProps) {
     }
   }
 
+  async function onDelete() {
+    if (!event) return;
+    setDeleting(true);
+    await deleteEvent(event.id);
+  }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-6 flex-col">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {form.formState.errors.root && (
           <div className="text-destructive text-sm">
             {form.formState.errors.root.message}
@@ -68,29 +75,12 @@ export function EventForm({ event }: EventFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Event Name</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input placeholder="Quick consultation call" {...field} />
               </FormControl>
               <FormDescription>
-                The name users will see when booking this event
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="durationInMinutes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Duration</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormDescription>
-                The duration of the event in minutes
+                What is this event called?
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -104,10 +94,72 @@ export function EventForm({ event }: EventFormProps) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea className="resize-none h-32" {...field} />
+                <Textarea
+                  placeholder="A short 15-minute call to discuss your goals."
+                  className="resize-none"
+                  {...field}
+                  value={field.value ?? ""}
+                />
               </FormControl>
               <FormDescription>
-                Describe the event and what it includes (optional)
+                A brief description of the event.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="durationInMinutes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Duration (minutes)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  {...field}
+                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                />
+              </FormControl>
+              <FormDescription>
+                How long is this event?
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="locationType"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Location Type</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="in-person" id="in-person" />
+                    <label htmlFor="in-person" className="flex items-center cursor-pointer">
+                      <MapPin className="h-4 w-4 mr-2 text-primary" />
+                      In Person
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="virtual" id="virtual" />
+                    <label htmlFor="virtual" className="flex items-center cursor-pointer">
+                      <Video className="h-4 w-4 mr-2 text-primary" />
+                      Virtual (Google Meet)
+                    </label>
+                  </div>
+                </RadioGroup>
+              </FormControl>
+              <FormDescription>
+                Choose whether this event will be in-person or virtual. Virtual events will automatically generate a Google Meet link.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -118,9 +170,12 @@ export function EventForm({ event }: EventFormProps) {
           control={form.control}
           name="isActive"
           render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center gap-2">
-                <FormLabel>Active</FormLabel>
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Active</FormLabel>
+                <FormDescription>
+                  Deactivate to temporarily hide this event from booking.
+                </FormDescription>
               </div>
               <FormControl>
                 <Switch
@@ -128,55 +183,43 @@ export function EventForm({ event }: EventFormProps) {
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormDescription>
-                Inactive events are not visible to users
-              </FormDescription>
-              <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="flex justify-end gap-2">
-            {event &&  (
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button 
-                        variant="destructiveGhost" 
-                        disabled={ isDeletePending || form.formState.isSubmitting}>Delete</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>this action cannot be undone</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
-                            disabled={isDeletePending || form.formState.
-                            isSubmitting}
-                            variant="destructive"
-                            onClick={() => {
-                                startDeleteTransition(async () => {
-                                    const data = await deleteEvent(event.id);
-                                    if (data?.error) {
-                                        form.setError("root", {
-                                            message: "There was an error deleting your event",
-                                        });
-                                    }
-                                });
-                            }}>Delete</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            )}
-             
-                        <Button disabled={isDeletePending || form.formState.
-                            isSubmitting} type="button" asChild 
-                        variant="outline">
-            <Link href="/events">Cancel</Link>
+        <div className="flex justify-between">
+          {event && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructiveGhost"
+                  disabled={isDeletePending || form.formState.isSubmitting}
+                >
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>this action cannot be undone</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={isDeletePending || form.formState.isSubmitting}
+                    variant="destructive"
+                    onClick={onDelete}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
+          <Button type="submit" disabled={isDeletePending || form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? "Saving..." : "Save Event"}
           </Button>
-          <Button disabled={isDeletePending || form.formState.
-                            isSubmitting} type="submit">Save</Button>
         </div>
       </form>
     </Form>

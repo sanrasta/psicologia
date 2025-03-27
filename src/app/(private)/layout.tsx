@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { Home } from "lucide-react";
@@ -16,13 +16,19 @@ export default function PrivateLayout({
   
   const isEventsPage = pathname === "/events";
 
-  // Update navbar background when scrolling past 100px
+  // Optimize scroll event with useCallback and passive listener
+  const handleScroll = useCallback(() => {
+    setScrolled(window.scrollY > 100);
+  }, []);
+
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 100);
-    };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  // Optimize mobile menu toggle with useCallback
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen(prev => !prev);
   }, []);
 
   return (
@@ -54,7 +60,7 @@ export default function PrivateLayout({
           {/* Mobile Hamburger */}
           <div className="md:hidden">
             <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              onClick={toggleMobileMenu} 
               className="focus:outline-none text-white"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,23 +82,23 @@ export default function PrivateLayout({
         }`}
       >
         <button 
-          onClick={() => setMobileMenuOpen(false)} 
+          onClick={toggleMobileMenu} 
           className="absolute top-5 right-5 text-3xl text-white"
         >
           ✕
         </button>
         <nav className="flex flex-col space-y-6 text-3xl">
           {!isEventsPage && (
-            <a href="/events" className="hover:text-red-500 transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>Events</a>
+            <a href="/events" className="hover:text-red-500 transition-all duration-300" onClick={toggleMobileMenu}>Events</a>
           )}
-          <a href="/" className="hover:text-red-500 transition-all duration-300 flex items-center justify-center" onClick={() => setMobileMenuOpen(false)}>
+          <a href="/" className="hover:text-red-500 transition-all duration-300 flex items-center justify-center" onClick={toggleMobileMenu}>
             <Home className="w-8 h-8" />
           </a>
         </nav>
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 pt-24">{children}</main>
+      <main className="container mx-auto pt-28 px-4 pb-12 bg-black">{children}</main>
     </>
   );
 }

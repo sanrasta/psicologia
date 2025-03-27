@@ -39,16 +39,22 @@ import { toZonedTime } from "date-fns-tz"
 import { createMeeting } from "@/server/actions/meetings"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
+import { MapPin, Video } from "lucide-react"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+
+type MeetingFormProps = {
+  validTimes: Date[]
+  eventId: string
+  clerkUserId: string
+  locationType?: string
+}
 
 export function MeetingForm({
   validTimes,
   eventId,
   clerkUserId,
-}: {
-  validTimes: Date[]
-  eventId: string
-  clerkUserId: string
-}) {
+  locationType = "in-person",
+}: MeetingFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   
@@ -59,11 +65,14 @@ export function MeetingForm({
       guestName: "",
       guestEmail: "",
       guestNotes: "",
+      locationType: locationType,
     },
   })
 
   const timezone = form.watch("timezone")
   const date = form.watch("date")
+  const selectedLocationType = form.watch("locationType")
+  
   const validTimesInTimezone = useMemo(() => {
     return validTimes.map(date => toZonedTime(date, timezone))
   }, [validTimes, timezone])
@@ -97,6 +106,7 @@ export function MeetingForm({
         ...values,
         eventId,
         clerkUserId,
+        isVirtual: values.locationType === "virtual"
       });
 
       if (data?.error) {
@@ -127,6 +137,44 @@ export function MeetingForm({
             {form.formState.errors.root.message}
           </div>
         )}
+        
+        <FormField
+          control={form.control}
+          name="locationType"
+          render={({ field }) => (
+            <FormItem className="mb-4">
+              <FormLabel>How would you like to meet?</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="in-person">
+                    <div className="flex items-center">
+                      <MapPin className="h-4 w-4 mr-2 text-yellow-500" />
+                      <span>In Person</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="virtual">
+                    <div className="flex items-center">
+                      <Video className="h-4 w-4 mr-2 text-blue-500" />
+                      <span>Virtual (Google Meet)</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                {selectedLocationType === "virtual" ? 
+                  "A Google Meet link will be created automatically and included in your calendar invitation." :
+                  "In-person meeting details will be provided in your calendar invitation."}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
         <FormField
           control={form.control}
           name="timezone"
@@ -152,6 +200,7 @@ export function MeetingForm({
             </FormItem>
           )}
         />
+
         <div className="flex gap-4 flex-col md:flex-row">
           <FormField
             control={form.control}

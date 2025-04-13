@@ -414,7 +414,7 @@ export default function HomePage() {
           <div className="container mx-auto px-4 text-center relative z-10">
             <AnimatedSection>
               <h2 className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight text-[#2E2E2E]">
-                Transform Your <span className="text-[#9B5DE5] relative">Dog's Behavior
+                Transform Your <span className="text-[#9B5DE5] relative">Dog&apos;s Behavior
                   <span 
                     className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#9B5DE5] to-[#F15BB5]"
                   />
@@ -466,7 +466,7 @@ export default function HomePage() {
                   </h2>
                 </motion.div>
                 <p className="text-[#2E2E2E] text-xl mt-6">
-                  Elevate your dog's behavior with personalized training designed for{" "}
+                  Elevate your dog&apos;s behavior with personalized training designed for{" "}
                   <span className="font-semibold text-[#9B5DE5]">lasting results</span>.
                 </p>
               </div>
@@ -488,7 +488,7 @@ export default function HomePage() {
                 },
                 {
                   title: "Advanced Training",
-                  description: "Take your dog's skills to the next level with complex commands, off-leash reliability, and tricks.",
+                  description: "Take your dog&apos;s skills to the next level with complex commands, off-leash reliability, and tricks.",
                   color: "#00BBF9",
                   rgbColor: "0, 187, 249"
                 }
@@ -564,7 +564,7 @@ export default function HomePage() {
                   </div>
                   
                   <div className="text-xl text-[#2E2E2E]/80 font-light italic leading-relaxed mb-8">
-                    "<span className="text-[#2E2E2E] font-medium">The personalized approach</span> at <span className="text-[#9B5DE5]">Elite Dog Training</span> helped transform my anxious rescue into a confident, obedient companion. The trainers' patience and expertise made all the difference in our lives."
+                    "<span className="text-[#2E2E2E] font-medium">The personalized approach</span> at <span className="text-[#9B5DE5]">Elite Dog Training</span> helped transform my anxious rescue into a confident, obedient companion. The trainers&apos; patience and expertise made all the difference in our lives."
                   </div>
                   
                   <div className="flex items-center">
@@ -666,7 +666,7 @@ export default function HomePage() {
                 Get <span className="text-[#9B5DE5]">Started</span>
               </h2>
               <p className="mt-4 text-[#2E2E2E]/70 max-w-xl mx-auto">
-                Ready to transform your dog's behavior? Reach out to us today to discuss your training goals and schedule your free evaluation session.
+                Ready to transform your dog&apos;s behavior? Reach out to us today to discuss your training goals and schedule your free evaluation session.
               </p>
             </div>
             
@@ -922,7 +922,7 @@ export default function HomePage() {
                       </motion.button>
                       
                       <p className="text-center text-sm text-[#2E2E2E]/60 mt-4">
-                        We'll respond to your inquiry within 24 hours
+                        We&apos;ll respond to your inquiry within 24 hours
                       </p>
                     </motion.div>
                   </div>

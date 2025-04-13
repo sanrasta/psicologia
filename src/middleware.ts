@@ -4,7 +4,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 const isPublicRoute = createRouteMatcher(['/', "/sign-in(.*)", "/book(.*)"])
 
 // Define protected routes
-const isProtectedRoute = createRouteMatcher(['/events(.*)']);
+const isProtectedRoute = createRouteMatcher(['/events(.*)', '/contacts(.*)']);
 
 // Define admin-only routes that should be blocked from direct access
 const isAdminRoute = createRouteMatcher(['/schedule(.*)']);

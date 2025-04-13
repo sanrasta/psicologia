@@ -32,35 +32,39 @@ export async function createDefaultEvents() {
     const defaultEvents = [
       {
         id: uuidv4(),
-        name: "Quick Call",
-        description: "A brief 15-minute consultation to discuss your needs",
+        name: "Initial Consultation",
+        description: "A 15-minute consultation to discuss your dog's training needs and goals",
         durationInMinutes: 15,
         clerkUserId: userId,
-        isActive: true
+        isActive: true,
+        locationType: "virtual"
       },
       {
         id: uuidv4(),
-        name: "Questions & Inquiries",
-        description: "30-minute session to answer any questions you may have",
+        name: "Behavior Assessment",
+        description: "30-minute session to evaluate your dog's behavior and create a personalized training plan",
         durationInMinutes: 30,
         clerkUserId: userId,
-        isActive: true
+        isActive: true,
+        locationType: "in-person"
       },
       {
         id: uuidv4(),
-        name: "Active Gym Session",
-        description: "60-minute workout session with personalized guidance",
+        name: "Training Session",
+        description: "60-minute hands-on training session for you and your dog",
         durationInMinutes: 60,
         clerkUserId: userId,
-        isActive: true
+        isActive: true,
+        locationType: "in-person"
       },
       {
         id: uuidv4(),
-        name: "Assessment",
-        description: "45-minute comprehensive fitness assessment",
+        name: "Virtual Check-in",
+        description: "45-minute online session to review progress and adjust training techniques",
         durationInMinutes: 45,
         clerkUserId: userId,
-        isActive: true
+        isActive: true,
+        locationType: "virtual"
       }
     ];
 

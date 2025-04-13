@@ -12,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Personal Trainer App",
-  description: "Book and manage your personal training sessions",
+  title: "Elite Dog Training",
+  description: "Professional dog training services to transform your canine companion",
 };
 
 export default function RootLayout({
@@ -23,18 +23,18 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${inter.variable} dark`}>
+      <html lang="en" className={`${inter.variable} bg-[#F8F0FF]`} suppressHydrationWarning>
         <head>
           {/* Add preload for critical resources */}
           <link
             rel="preload"
-            href="/rio.png"
+            href="/doggy.png"
             as="image"
             type="image/png"
           />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </head>
-        <body className="min-h-screen bg-black text-foreground">
+        <body className="min-h-screen bg-[#F8F0FF] text-[#2E2E2E]">
           {children}
         </body>
       </html>

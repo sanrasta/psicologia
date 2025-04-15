@@ -22,7 +22,17 @@ export default function MigrationsPage() {
       }
     } catch (error) {
       setStatus("error");
-      setMessage(`Error: ${error.message}`);
+      let errorMessage = "An unknown error occurred.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === "string") {
+        errorMessage = error;
+      } else if (error && typeof error === "object" && "message" in error && typeof error.message === "string") {
+        errorMessage = error.message;
+      }
+      
+      setMessage(`Error: ${errorMessage}`);
     }
   }
 

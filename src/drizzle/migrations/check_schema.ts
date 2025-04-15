@@ -12,8 +12,8 @@ export async function checkSchema() {
       WHERE table_name = 'events';
     `);
     
-    console.log("Event table columns:", result.rows);
-    return { success: true, columns: result.rows };
+    console.log("Event table columns:", result);
+    return { success: true, columns: result };
   } catch (error: unknown) {
     console.error("Error checking schema:", error);
     return { 

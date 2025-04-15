@@ -4,11 +4,12 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/drizzle/db";
 import { EventTable } from "@/drizzle/schema";
 import { eq, count } from "drizzle-orm";
-import { v4 as uuidv4 } from 'uuid';
 
 // Create default events for a user
 export async function createDefaultEvents() {
   const { userId } = await auth();
+  console.log("Creating default events for user:", userId);
+  
   if (!userId) return { error: true };
 
   try {
@@ -16,6 +17,8 @@ export async function createDefaultEvents() {
     const eventCount = await db.select({ count: count() })
       .from(EventTable)
       .where(eq(EventTable.clerkUserId, userId));
+    
+    console.log("Current event count:", eventCount[0].count);
     
     if (eventCount[0].count === 4) {
       console.log(`User ${userId} already has 4 events, skipping creation`);
@@ -28,51 +31,52 @@ export async function createDefaultEvents() {
     
     console.log(`Deleted existing events for user ${userId}`);
     
-    // Create the 4 default events with dynamically generated IDs
+    // Create the 4 default events
     const defaultEvents = [
       {
-        id: uuidv4(),
         name: "Initial Consultation",
         description: "A 15-minute consultation to discuss your dog's training needs and goals",
-        durationInMinutes: 15,
+        duration: "15",
         clerkUserId: userId,
         isActive: true,
-        locationType: "virtual"
+        locationType: "virtual",
+        calendlyUrl: "https://calendly.com/18e9aa18-284e-49fa-8cab-1d97b5c10a0f/15min"
       },
       {
-        id: uuidv4(),
         name: "Behavior Assessment",
         description: "30-minute session to evaluate your dog's behavior and create a personalized training plan",
-        durationInMinutes: 30,
+        duration: "30",
         clerkUserId: userId,
         isActive: true,
-        locationType: "in-person"
+        locationType: "in-person",
+        calendlyUrl: "https://calendly.com/18e9aa18-284e-49fa-8cab-1d97b5c10a0f/30min"
       },
       {
-        id: uuidv4(),
-        name: "Training Session",
-        description: "60-minute hands-on training session for you and your dog",
-        durationInMinutes: 60,
+        name: "Basic Obedience Training",
+        description: "60-minute session focusing on basic commands and good behavior",
+        duration: "60",
         clerkUserId: userId,
         isActive: true,
-        locationType: "in-person"
+        locationType: "in-person",
+        calendlyUrl: "https://calendly.com/18e9aa18-284e-49fa-8cab-1d97b5c10a0f/60min"
       },
       {
-        id: uuidv4(),
-        name: "Virtual Check-in",
-        description: "45-minute online session to review progress and adjust training techniques",
-        durationInMinutes: 45,
+        name: "Advanced Training",
+        description: "90-minute session for advanced commands and complex behaviors",
+        duration: "90",
         clerkUserId: userId,
         isActive: true,
-        locationType: "virtual"
+        locationType: "in-person",
+        calendlyUrl: "https://calendly.com/18e9aa18-284e-49fa-8cab-1d97b5c10a0f/90min"
       }
     ];
-
+    
+    console.log("Creating default events:", JSON.stringify(defaultEvents, null, 2));
+    
     // Insert all default events
     await db.insert(EventTable).values(defaultEvents);
     
     console.log(`Created 4 default events for user ${userId}`);
-    
     return { error: false };
   } catch (error) {
     console.error("Error creating default events:", error);

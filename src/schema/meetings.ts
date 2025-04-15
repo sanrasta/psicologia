@@ -1,4 +1,3 @@
-import { startOfDay } from "date-fns"
 import { z } from "zod"
 
 // Define the locationType enum separately so it can be reused 
@@ -25,9 +24,9 @@ export const meetingFormSchema = z
   })
   .merge(meetingSchemaBase)
 
-export const meetingActionSchema = z
-  .object({
-    eventId: z.string().min(1, "Required"),
-    clerkUserId: z.string().min(1, "Required"),
-  })
-  .merge(meetingSchemaBase)
+export const meetingActionSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  duration: z.string().min(1, "Duration is required"),
+  calendlyUrl: z.string().url("Invalid Calendly URL"),
+})

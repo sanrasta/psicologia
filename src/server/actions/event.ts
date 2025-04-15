@@ -21,13 +21,20 @@ export async function createEvent(
     return { error: true };
   }
 
-  await db.insert(EventTable).values({ ...data, clerkUserId: userId });
+  const { durationInMinutes, ...rest } = data;
+  const transformedData = {
+    ...rest,
+    duration: durationInMinutes.toString(),
+    clerkUserId: userId
+  };
+
+  await db.insert(EventTable).values(transformedData);
 
   redirect("/events");
 }
 
 export async function updateEvent(
-    id: string,
+    id: number,
     unsafeData: z.infer<typeof EventFormSchema>
   ): Promise<{ error: boolean } | undefined> {
     const { userId } = await auth();
@@ -38,35 +45,40 @@ export async function updateEvent(
       return { error: true };
     }
 
-   const { rowCount } = await db
-    .update(EventTable)
-    .set({...data})
-    .where(and(eq(EventTable.id, id), eq(EventTable.clerkUserId, userId)))
+    const { durationInMinutes, ...rest } = data;
+    const transformedData = {
+      ...rest,
+      duration: durationInMinutes.toString()
+    };
+
+    const result = await db
+      .update(EventTable)
+      .set(transformedData)
+      .where(and(eq(EventTable.id, id), eq(EventTable.clerkUserId, userId)));
   
-    if (rowCount === 0) {
+    if (!result) {
         return { error: true };
     }
   
     redirect("/events");
+}
+
+export async function deleteEvent(
+  id: number,
+): Promise<{ error: boolean } | undefined> {
+  const { userId } = await auth();
+
+  if (userId == null) {
+    return { error: true };
   }
 
-  export async function deleteEvent(
-    id: string,
-  ): Promise<{ error: boolean } | undefined> {
-    const { userId } = await auth();
-  
-  
-    if (userId == null) {
-      return { error: true };
-    }
-
-   const { rowCount } = await db
+  const result = await db
     .delete(EventTable)
-    .where(and(eq(EventTable.id, id), eq(EventTable.clerkUserId, userId)))
-  
-    if (rowCount === 0) {
-        return { error: true };
-    }
-  
-    redirect("/events");
+    .where(and(eq(EventTable.id, id), eq(EventTable.clerkUserId, userId)));
+
+  if (!result) {
+    return { error: true };
   }
+
+  redirect("/events");
+}

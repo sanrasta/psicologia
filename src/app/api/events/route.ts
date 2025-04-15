@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { createDefaultEvents } from "@/server/actions/defaultEvents";
 
 export async function GET() {
-  const { userId } = auth();
+  const { userId } = await auth();
   
   if (!userId) {
     return NextResponse.json([], { status: 401 });

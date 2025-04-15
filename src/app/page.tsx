@@ -182,10 +182,10 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              {["Training", "Programs", "Testimonials", "Contact"].map((item, index) => (
+              {["Training", "Tiered Offerings", "Testimonials", "Contact"].map((item, index) => (
                 <motion.a
                   key={item}
-                  href={`#${item.toLowerCase()}`}
+                  href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
                   className="hover:text-[#9B5DE5] relative group font-medium"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -284,10 +284,10 @@ export default function HomePage() {
                   Home
                 </motion.button>
                 
-                {["Training", "Programs", "Testimonials", "Contact"].map((item, index) => (
+                {["Training", "Programs", "Tiered Offerings", "Testimonials", "Contact"].map((item, index) => (
                   <motion.a
                     key={item}
-                    href={`#${item.toLowerCase()}`}
+                    href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
                     className="hover:text-[#9B5DE5] transition-all duration-300"
                     onClick={() => setMobileMenuOpen(false)}
                     initial={{ opacity: 0, y: 20 }}
@@ -372,9 +372,7 @@ export default function HomePage() {
                 <AnimatedText />
               </div>
               
-              <p className="text-xl md:text-2xl text-[#2E2E2E] mb-12 max-w-3xl text-center">
-                Exceptional dog training that transforms challenging behaviors into confident companionship through proven methods and personalized approaches.
-              </p>
+            
               
               <div className="flex flex-col md:flex-row gap-4 items-center">
           
@@ -424,9 +422,7 @@ export default function HomePage() {
             
             <AnimatedSection delay={0.2}>
               <p className="max-w-2xl mx-auto text-[#2E2E2E] text-xl mb-12 leading-relaxed">
-                Discover proven dog training strategies that turn challenging behaviors into 
-                obedient responses. Our personalized training system is designed to help your 
-                canine companion achieve their full potential and strengthen your bond.
+                Our experienced trainers use positive reinforcement techniques to ensure your dog learns in a safe and enjoyable environment. Book a session today and start your journey to a well-behaved companion.
               </p>
             </AnimatedSection>
             
@@ -529,116 +525,95 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Testimonials Section - Professional Design */}
-        <section id="testimonials" className="py-28 relative overflow-hidden">
-          {/* Subtle background element */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#9B5DE5]/10 to-[#F8F0FF] z-0"></div>
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#9B5DE5]/20 to-transparent"></div>
-          
-          <div className="container mx-auto px-4 relative z-10">
-            <AnimatedSection>
-              <div className="flex flex-col items-center mb-16">
-                <div className="inline-block mb-3">
-                  <div className="w-10 h-1 bg-[#9B5DE5] mx-auto"></div>
-                </div>
-                <h2 className="text-4xl md:text-5xl font-bold text-[#2E2E2E]">
-                  Client <span className="text-[#9B5DE5]">Testimonials</span>
+      
+         {/* Tiered Offerings Section */}
+      <section id="tiered-offerings" className="py-28 bg-gradient-to-b from-white to-[#F8F0FF] relative overflow-hidden">
+        <div className="container mx-auto px-4">
+          <AnimatedSection>
+            <div className="text-center mb-16">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8 }}
+              >
+                <h2 className="text-4xl md:text-6xl font-bold relative inline-block text-[#2E2E2E]">
+                  Tiered <span className="text-[#9B5DE5]">Offerings</span>
+                  <motion.div 
+                    className="absolute -bottom-3 left-0 h-1 bg-gradient-to-r from-[#9B5DE5] to-[#F15BB5]"
+                    initial={{ width: 0 }}
+                    whileInView={{ width: "100%" }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                  />
                 </h2>
-                <p className="text-[#2E2E2E]/80 text-lg mt-4 max-w-2xl text-center">
-                  Discover what dog owners have to say about their transformative experiences with our professional training services.
-                </p>
-              </div>
-            </AnimatedSection>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <AnimatedSection delay={0.1}>
-                <motion.div 
-                  className="bg-gradient-to-br from-white to-[#F8F0FF] rounded-xl p-8 relative overflow-hidden border border-[#9B5DE5]/10 shadow-xl"
-                  whileHover={{ y: -5, boxShadow: "0 20px 40px -15px rgba(155, 93, 229, 0.15)" }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="absolute top-0 right-0 w-40 h-40 -m-16 opacity-10">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-[#9B5DE5]">
-                      <path d="M9 7.5l-4.5 4.5h3l-6 9h7.5l6-9h-3l4.5-4.5h-7.5z" fill="currentColor"/>
-                    </svg>
-                  </div>
-                  
-                  <div className="text-xl text-[#2E2E2E]/80 font-light italic leading-relaxed mb-8">
-                    "<span className="text-[#2E2E2E] font-medium">The personalized approach</span> at <span className="text-[#9B5DE5]">Elite Dog Training</span> helped transform my anxious rescue into a confident, obedient companion. The trainers&apos; patience and expertise made all the difference in our lives."
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#9B5DE5]/20 flex-shrink-0">
-                      <Image
-                        src="/doggy.png"
-                        alt="Client 1"
-                        width={56}
-                        height={56}
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="ml-4">
-                      <p className="font-semibold text-[#2E2E2E] text-lg">Sarah Johnson</p>
-                      <div className="flex items-center">
-                        <p className="text-[#2E2E2E]/60 text-sm">Dog Owner • German Shepherd</p>
-                        <div className="flex ml-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <svg key={star} className="w-3 h-3 text-[#F15BB5]" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                            </svg>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatedSection>
-              
-              <AnimatedSection delay={0.3}>
-                <motion.div 
-                  className="bg-gradient-to-br from-white to-[#F8F0FF] rounded-xl p-8 relative overflow-hidden border border-[#9B5DE5]/10 shadow-xl"
-                  whileHover={{ y: -5, boxShadow: "0 20px 40px -15px rgba(155, 93, 229, 0.15)" }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="absolute top-0 right-0 w-40 h-40 -m-16 opacity-10">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-[#9B5DE5]">
-                      <path d="M9 7.5l-4.5 4.5h3l-6 9h7.5l6-9h-3l4.5-4.5h-7.5z" fill="currentColor"/>
-                    </svg>
-                  </div>
-                  
-                  <div className="text-xl text-[#2E2E2E]/80 font-light italic leading-relaxed mb-8">
-                    "Their <span className="text-[#2E2E2E] font-medium">advanced training techniques</span> completely transformed my stubborn Golden Retriever. <span className="text-[#9B5DE5]">Elite Dog Training</span> gave us the tools to communicate effectively and establish clear boundaries. Now our walks are enjoyable for both of us!"
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#9B5DE5]/20 flex-shrink-0">
-                      <Image
-                        src="/doggy.png"
-                        alt="Client 2"
-                        width={56}
-                        height={56}
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="ml-4">
-                      <p className="font-semibold text-[#2E2E2E] text-lg">Michael Thompson</p>
-                      <div className="flex items-center">
-                        <p className="text-[#2E2E2E]/60 text-sm">Dog Owner • Golden Retriever</p>
-                        <div className="flex ml-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <svg key={star} className="w-3 h-3 text-[#F15BB5]" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                            </svg>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatedSection>
+              </motion.div>
+              <p className="text-[#2E2E2E] text-xl mt-6">
+                Choose the perfect training solution that fits your needs and lifestyle
+              </p>
             </div>
+          </AnimatedSection>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Hybrid Board Training",
+                price: "$2,000",
+                duration: "2-4 weeks",
+                description: "Comprehensive board & train package for intensive learning and behavior modification.",
+                color: "#9B5DE5",
+                rgbColor: "155, 93, 229"
+              },
+              {
+                title: "E-Exchange Program",
+                price: "Skill Trade",
+                duration: "Flexible",
+                description: "Exchange your skills for dog training services. Perfect for creative professionals.",
+                color: "#F15BB5",
+                rgbColor: "241, 91, 181"
+              },
+              {
+                title: "The Regulars",
+                price: "Subscription",
+                duration: "Ongoing",
+                description: "Join our community for continuous learning, content, and support. Open to everyone.",
+                color: "#00BBF9",
+                rgbColor: "0, 187, 249"
+              }
+            ].map((tier, index) => (
+              <AnimatedSection key={tier.title} delay={0.2 * index}>
+                <motion.div 
+                  className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl h-full group cursor-pointer shadow-lg hover:shadow-xl"
+                  whileHover={{ 
+                    y: -10,
+                    boxShadow: `0 10px 30px -5px rgba(${tier.rgbColor},0.3)`
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <motion.div 
+                    className="w-16 h-16 rounded-xl mb-6 flex items-center justify-center"
+                    style={{ backgroundColor: `${tier.color}20` }}
+                    animate={{ rotate: [0, 10, 0, -10, 0] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <div className="w-8 h-8 rounded-lg" style={{ backgroundColor: tier.color }}></div>
+                  </motion.div>
+                  
+                  <h3 className="text-2xl font-bold mb-2 text-[#2E2E2E]">
+                    {tier.title}
+                  </h3>
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl font-semibold" style={{ color: tier.color }}>{tier.price}</span>
+                    <span className="text-[#2E2E2E]/60">•</span>
+                    <span className="text-[#2E2E2E]/60">{tier.duration}</span>
+                  </div>
+                  <p className="text-[#2E2E2E]/70 text-lg">
+                    {tier.description}
+                  </p>
+                </motion.div>
+              </AnimatedSection>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
         {/* Contact Section - Premium Design */}
         <section id="contact" className="py-32 relative overflow-hidden">
@@ -670,9 +645,9 @@ export default function HomePage() {
               </p>
             </div>
             
-            <div className="grid md:grid-cols-4 gap-8 items-start">
+            <div className="grid md:grid-cols-2 gap-8 items-start">
               {/* Left side info cards */}
-              <AnimatedSection delay={0.1} className="md:col-span-2">
+              <AnimatedSection delay={0.1}>
                 <motion.div 
                   className="bg-gradient-to-br from-white to-[#F8F0FF] backdrop-blur-sm p-8 rounded-xl border border-[#9B5DE5]/10 h-full shadow-xl"
                   whileHover={{ scale: 1.01 }}
@@ -747,7 +722,7 @@ export default function HomePage() {
               </AnimatedSection>
               
               {/* Right side form */}
-              <AnimatedSection delay={0.3} className="md:col-span-3">
+              <AnimatedSection delay={0.3}>
                 <motion.form 
                   ref={formRef}
                   action={async (formData) => {
@@ -932,6 +907,118 @@ export default function HomePage() {
           </div>
         </section>
 
+
+  {/* Testimonials Section - Professional Design */}
+  <section id="testimonials" className="py-28 relative overflow-hidden">
+          {/* Subtle background element */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#9B5DE5]/10 to-[#F8F0FF] z-0"></div>
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#9B5DE5]/20 to-transparent"></div>
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <AnimatedSection>
+              <div className="flex flex-col items-center mb-16">
+                <div className="inline-block mb-3">
+                  <div className="w-10 h-1 bg-[#9B5DE5] mx-auto"></div>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold text-[#2E2E2E]">
+                  Client <span className="text-[#9B5DE5]">Testimonials</span>
+                </h2>
+                <p className="text-[#2E2E2E]/80 text-lg mt-4 max-w-2xl text-center">
+                  Discover what dog owners have to say about their transformative experiences with our professional training services.
+                </p>
+              </div>
+            </AnimatedSection>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <AnimatedSection delay={0.1}>
+                <motion.div 
+                  className="bg-gradient-to-br from-white to-[#F8F0FF] rounded-xl p-8 relative overflow-hidden border border-[#9B5DE5]/10 shadow-xl"
+                  whileHover={{ y: -5, boxShadow: "0 20px 40px -15px rgba(155, 93, 229, 0.15)" }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="absolute top-0 right-0 w-40 h-40 -m-16 opacity-10">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-[#9B5DE5]">
+                      <path d="M9 7.5l-4.5 4.5h3l-6 9h7.5l6-9h-3l4.5-4.5h-7.5z" fill="currentColor"/>
+                    </svg>
+                  </div>
+                  
+                  <div className="text-xl text-[#2E2E2E]/80 font-light italic leading-relaxed mb-8">
+                    &quot;<span className="text-[#2E2E2E] font-medium">Santiago&apos;s expertise in dog training is unmatched. He helped transform my reactive dog into a well-behaved companion.&quot;</span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#9B5DE5]/20 flex-shrink-0">
+                      <Image
+                        src="/doggy.png"
+                        alt="Client 1"
+                        width={56}
+                        height={56}
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="ml-4">
+                      <p className="font-semibold text-[#2E2E2E] text-lg">Sarah Johnson</p>
+                      <div className="flex items-center">
+                        <p className="text-[#2E2E2E]/60 text-sm">Dog Owner • German Shepherd</p>
+                        <div className="flex ml-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <svg key={star} className="w-3 h-3 text-[#F15BB5]" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatedSection>
+              
+              <AnimatedSection delay={0.3}>
+                <motion.div 
+                  className="bg-gradient-to-br from-white to-[#F8F0FF] rounded-xl p-8 relative overflow-hidden border border-[#9B5DE5]/10 shadow-xl"
+                  whileHover={{ y: -5, boxShadow: "0 20px 40px -15px rgba(155, 93, 229, 0.15)" }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="absolute top-0 right-0 w-40 h-40 -m-16 opacity-10">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-[#9B5DE5]">
+                      <path d="M9 7.5l-4.5 4.5h3l-6 9h7.5l6-9h-3l4.5-4.5h-7.5z" fill="currentColor"/>
+                    </svg>
+                  </div>
+                  
+                  <div className="text-xl text-[#2E2E2E]/80 font-light italic leading-relaxed mb-8">
+                    &quot;<span className="text-[#2E2E2E] font-medium">The personalized approach</span> at <span className="text-[#9B5DE5]">Elite Dog Training</span> helped transform my anxious rescue into a confident, obedient companion. The trainers&apos; patience and expertise made all the difference in our lives.&quot;
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#9B5DE5]/20 flex-shrink-0">
+                      <Image
+                        src="/doggy.png"
+                        alt="Client 2"
+                        width={56}
+                        height={56}
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="ml-4">
+                      <p className="font-semibold text-[#2E2E2E] text-lg">Michael Thompson</p>
+                      <div className="flex items-center">
+                        <p className="text-[#2E2E2E]/60 text-sm">Dog Owner • Golden Retriever</p>
+                        <div className="flex ml-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <svg key={star} className="w-3 h-3 text-[#F15BB5]" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatedSection>
+            </div>
+          </div>
+        </section>
+
         {/* About Section */}
         <section id="about" className="py-20">
           <div className="container mx-auto px-4 text-center">
@@ -954,6 +1041,8 @@ export default function HomePage() {
         </footer>
               
       </div>
+
+     
     </>
   );
 }

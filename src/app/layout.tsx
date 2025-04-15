@@ -2,6 +2,8 @@
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Inter } from "next/font/google";
+import type { Metadata } from "next";
+import { Toaster } from "@/components/ui/toaster";
 
 // Optimize font loading
 const inter = Inter({
@@ -11,7 +13,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Elite Dog Training",
   description: "Professional dog training services to transform your canine companion",
 };
@@ -36,6 +38,7 @@ export default function RootLayout({
         </head>
         <body className="min-h-screen bg-[#F8F0FF] text-[#2E2E2E]">
           {children}
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

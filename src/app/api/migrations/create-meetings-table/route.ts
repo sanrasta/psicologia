@@ -22,11 +22,11 @@ export async function POST() {
     
     console.log("Successfully created meetings table");
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating meetings table:", error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error.message || String(error) 
-    }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Failed to create meetings table" },
+      { status: 500 }
+    );
   }
 } 

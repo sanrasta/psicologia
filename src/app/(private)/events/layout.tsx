@@ -1,47 +1,39 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import Loading from "@/components/Loading";
+import { useEffect, useState } from "react";
+import { redirect } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import Script from "next/script";
 
 export default function EventsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
+  const [isLoading, setIsLoading] = useState(true);
+  const { userId } = useAuth();
 
-  // Reset loading state when pathname changes (navigation completes)
   useEffect(() => {
-    setIsLoading(false);
-  }, [pathname]);
-
-  // Handle navigation with loading state
-  const handleNavigation = (path: string) => {
-    setIsLoading(true);
-    router.push(path);
-  };
-
-  // Expose navigation function to window for use in child components
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // @ts-ignore - Add a global navigate function
-      window.navigateWithLoading = handleNavigation;
+    if (!userId) {
+      redirect("/sign-in");
     }
-    
-    return () => {
-      if (typeof window !== "undefined") {
-        // @ts-ignore - Clean up
-        delete window.navigateWithLoading;
-      }
-    };
-  }, []);
+    setIsLoading(false);
+  }, [userId]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5C4033]"></div>
+      </div>
+    );
+  }
 
   return (
     <>
-      {isLoading && <Loading />}
+      <Script
+        src="https://assets.calendly.com/assets/external/widget.js"
+        strategy="beforeInteractive"
+      />
       {children}
     </>
   );

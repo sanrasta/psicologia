@@ -1,88 +1,101 @@
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { db } from "@/drizzle/db"
-import { clerkClient } from "@clerk/nextjs/server"
-import Link from "next/link"
-import { notFound } from "next/navigation"
-import { formatEventDescription } from "@/lib/formatters"
-import { Video } from "lucide-react"
+"use client";
 
-export const revalidate = 0
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
-export default async function UserEventsPage({
-  params,
-}: {
-  params: { clerkUserId: string }
-}) {
-  // Await params before destructuring
-  const resolvedParams = await params;
-  const { clerkUserId } = resolvedParams;
-  
-  // Get all active events for this user
-  const events = await db.query.EventTable.findMany({
-    where: ({ clerkUserId: userIdCol, isActive }, { eq, and }) =>
-      and(eq(isActive, true), eq(userIdCol, clerkUserId)),
-  })
+interface BookPageParams {
+  clerkUserId: string;
+}
 
-  if (events.length === 0) return notFound()
+interface BookPageProps {
+  params: Promise<BookPageParams>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
-  // Get the user details
-  const clerk = await clerkClient()
-  const calendarUser = await clerk.users.getUser(clerkUserId)
+export default function BookPage({ params }: BookPageProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [events, setEvents] = useState<Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    durationInMinutes: number;
+    calendlyUrl: string;
+  }>>([]);
 
-  // Use this optimization for the events displayed on the page
-  const optimizedEvents = events.map(event => ({
-    ...event,
-    formattedDuration: formatEventDescription(event.durationInMinutes)
-  }));
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const resolvedParams = await params;
+        const response = await fetch(`/api/events/${resolvedParams.clerkUserId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch events");
+        }
+        const data = await response.json();
+        setEvents(data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [params]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5C4033]"></div>
+      </div>
+    );
+  }
 
   return (
-    <Card className="max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>
-          Book a session with {calendarUser.fullName}
-        </CardTitle>
-        <CardDescription>
-          Select the type of meeting you'd like to schedule
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {optimizedEvents.map(event => (
-          <Card key={event.id} className="overflow-hidden">
-            <CardHeader className="p-4">
-              <CardTitle className="text-xl">{event.name}</CardTitle>
-              <CardDescription className="flex items-center">
-                {event.formattedDuration}
-                {event.locationType === "virtual" && (
-                  <span className="ml-2 flex items-center text-blue-400">
-                    <Video className="h-3 w-3 mr-1" />
-                    Virtual
-                  </span>
-                )}
-              </CardDescription>
-            </CardHeader>
-            {event.description && (
-              <CardContent className="p-4 pt-0">
-                {event.description}
-              </CardContent>
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-3xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle>Available Training Sessions</CardTitle>
+            <CardDescription>
+              Choose a session that works best for you
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {events.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                No training sessions available at the moment.
+              </p>
+            ) : (
+              <div className="grid gap-6">
+                {events.map((event) => (
+                  <Card key={event.id} className="overflow-hidden">
+                    <CardHeader>
+                      <CardTitle className="text-xl">{event.name}</CardTitle>
+                      {event.description && (
+                        <CardDescription>{event.description}</CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">
+                          {event.durationInMinutes} minutes
+                        </span>
+                        <Button asChild>
+                          <Link href={event.calendlyUrl} target="_blank" rel="noopener noreferrer">
+                            Book Now
+                          </Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
-            <CardFooter className="p-4 pt-0">
-              <Button asChild className="w-full">
-                <Link href={`/book/${clerkUserId}/${event.id}`}>
-                  Select
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </CardContent>
-    </Card>
-  )
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 }

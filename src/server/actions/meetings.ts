@@ -1,66 +1,52 @@
 "use server"
-import { db } from "@/drizzle/db"
-import { getValidTimesFromSchedule } from "@/lib/getValidTimesFromSchedule"
-import { meetingActionSchema } from "@/schema/meetings"
-import { z } from "zod"
-import { createCalendarEvent } from "../googleCalendar"
-import { redirect } from "next/navigation"
-import { fromZonedTime } from "date-fns-tz"
-import { revalidatePath } from "next/cache"
-import { MeetingTable } from "@/drizzle/schema"
+import { db } from "@/db"
+import { EventTable } from "@/drizzle/schema"
+import { eq } from "drizzle-orm"
+import { auth } from "@clerk/nextjs/server"
 
-export async function createMeeting(
-  unsafeData: z.infer<typeof meetingActionSchema> & {
-    eventId: string
-    clerkUserId: string
-    isVirtual: boolean
-  }
-) {
-  const { success, data } = meetingActionSchema.safeParse(unsafeData)
-
-  if (!success) {
-    return { error: true }
-  }
-
-  // Get the event to double-check the duration
-  const event = await db.query.EventTable.findFirst({
-    where: ({ id, clerkUserId }, { and, eq }) =>
-      and(eq(id, unsafeData.eventId), eq(clerkUserId, unsafeData.clerkUserId)),
-  })
-
-  if (!event) {
-    return { error: true }
-  }
-
-  // Create a calendar event
+export async function createMeeting(data: {
+  name: string
+  duration: string
+  calendlyUrl: string
+  description?: string
+  locationType: string
+}) {
   try {
-    const calendarEvent = await createCalendarEvent({
-      clerkUserId: unsafeData.clerkUserId,
-      guestName: data.guestName,
-      guestEmail: data.guestEmail,
-      guestNotes: data.guestNotes,
-      startTime: data.startTime,
-      durationInMinutes: event.durationInMinutes,
-      eventName: event.name,
-      isVirtual: unsafeData.isVirtual
-    })
+    const { userId } = await auth()
+    
+    if (!userId) {
+      return { success: false, error: "User not authenticated" }
+    }
 
-    // Store the meeting in the database
-    await db.insert(MeetingTable).values({
-      name: data.guestName,
-      email: data.guestEmail,
-      notes: data.guestNotes,
-      startTime: data.startTime,
-      eventId: unsafeData.eventId,
-      calendarEventId: calendarEvent.id,
-      conferenceLink: calendarEvent.hangoutLink ?? null,
-      locationType: unsafeData.isVirtual ? "virtual" : "in-person",
-    })
-
-    revalidatePath(`/book/${unsafeData.clerkUserId}`)
-    return { success: true }
-  } catch (error) {
+    const result = await db.insert(EventTable).values({
+      ...data,
+      clerkUserId: userId,
+      isActive: true
+    }).returning()
+    
+    return { success: true, data: result[0] }
+  } catch (error: unknown) {
     console.error("Error creating meeting:", error)
-    return { error: true }
+    return { success: false, error: "Failed to create meeting" }
+  }
+}
+
+export async function getMeetings() {
+  try {
+    const result = await db.select().from(EventTable)
+    return { success: true, data: result }
+  } catch (error: unknown) {
+    console.error("Error getting meetings:", error)
+    return { success: false, error: "Failed to get meetings" }
+  }
+}
+
+export async function deleteMeeting(id: number) {
+  try {
+    await db.delete(EventTable).where(eq(EventTable.id, id))
+    return { success: true }
+  } catch (error: unknown) {
+    console.error("Error deleting meeting:", error)
+    return { success: false, error: "Failed to delete meeting" }
   }
 }

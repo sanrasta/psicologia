@@ -5,9 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, XCircle } from "lucide-react";
 
+interface TableInfo {
+  table_name: string;
+  table_schema: string;
+}
+
 export default function RunMigrationPage() {
   const [status, setStatus] = useState<string>("idle");
-  const [tables, setTables] = useState<any[]>([]);
+  const [tables, setTables] = useState<TableInfo[]>([]);
   const [meetingsTableExists, setMeetingsTableExists] = useState<boolean>(false);
 
   // Function to create the meetings table
@@ -27,7 +32,7 @@ export default function RunMigrationPage() {
         // Refresh schema after creating table
         await checkCurrentSchema();
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error creating meetings table:", error);
       setStatus("meetings_table_error");
     }
@@ -48,7 +53,7 @@ export default function RunMigrationPage() {
       } else {
         setStatus("schema_check_error");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Schema check error:", error);
       setStatus("schema_check_error");
     }

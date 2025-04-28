@@ -172,10 +172,29 @@ export default function HomePage() {
     }
   }, []);
 
+  // Update scroll functions for all sections
+  const scrollToSection = useCallback((sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      const headerHeight = 80; // Height of the fixed header
+      const sectionPosition = section.offsetTop - headerHeight;
+      window.scrollTo({
+        top: sectionPosition,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  // Update the scrollToContact function to match
   const scrollToContact = useCallback(() => {
     const contactSection = document.getElementById('contacto');
     if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
+      const headerHeight = 80; // Height of the fixed header
+      const sectionPosition = contactSection.offsetTop - headerHeight;
+      window.scrollTo({
+        top: sectionPosition,
+        behavior: 'smooth'
+      });
     }
   }, []);
 
@@ -208,7 +227,16 @@ export default function HomePage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               onClick={scrollToTop}
             >
-              {isSignedIn ? <UserButton /> : <Logo />}
+              {isSignedIn ? (
+                <div className="flex items-center space-x-3">
+                  <UserButton />
+                  <span className="text-xl font-bold text-[#4A6FA5]">
+                    Blanca <span className="text-[#6B8C6E]">Stella</span>
+                  </span>
+                </div>
+              ) : (
+                <Logo />
+              )}
             </motion.div>
 
             {/* Desktop Navigation */}
@@ -218,29 +246,30 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              {["Sobre Mí", "Servicios", "Especialidades", "Recursos", "Contacto"].map((item, index) => (
-                <motion.a
-                  key={item}
-                  href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="hover:text-[#6B8C6E] relative group font-medium"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
-                  onClick={(e) => {
-                    if (item === 'Contacto') {
+              {["Sobre Mí", "Servicios", "Especialidades", "Recursos", "Contacto"].map((item, index) => {
+                const sectionId = item.toLowerCase().replace(/\s+/g, '-');
+                return (
+                  <motion.a
+                    key={item}
+                    href={`#${sectionId}`}
+                    className="hover:text-[#6B8C6E] relative group font-medium"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
+                    onClick={(e) => {
                       e.preventDefault();
-                      scrollToContact();
-                    }
-                  }}
-                >
-                  {item}
-                  <motion.span 
-                    className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#6B8C6E] group-hover:w-full transition-all duration-300"
-                    initial={{ width: "0%" }}
-                    whileHover={{ width: "100%" }}
-                  />
-                </motion.a>
-              ))}
+                      scrollToSection(sectionId);
+                    }}
+                  >
+                    {item}
+                    <motion.span 
+                      className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#6B8C6E] group-hover:w-full transition-all duration-300"
+                      initial={{ width: "0%" }}
+                      whileHover={{ width: "100%" }}
+                    />
+                  </motion.a>
+                );
+              })}
               
               {isSignedIn ? (
                 <motion.div
@@ -332,20 +361,25 @@ export default function HomePage() {
                   Inicio
                 </motion.button>
                 
-                {["Sobre Mí", "Servicios", "Especialidades", "Testimonios", "Contacto"].map((item, index) => (
-                  <motion.a
-                    key={item}
-                    href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="hover:text-[#9B5DE5] transition-all duration-300"
-                    onClick={() => setMenuMovilAbierto(false)}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.4 }}
-                    whileHover={{ scale: 1.1, x: 10 }}
-                  >
-                    {item}
-                  </motion.a>
-                ))}
+                {["Sobre Mí", "Servicios", "Especialidades", "Recursos", "Contacto"].map((item, index) => {
+                  const sectionId = item.toLowerCase().replace(/\s+/g, '-');
+                  return (
+                    <motion.button
+                      key={item}
+                      onClick={() => {
+                        setMenuMovilAbierto(false);
+                        scrollToSection(sectionId);
+                      }}
+                      className="hover:text-[#9B5DE5] transition-all duration-300 text-3xl font-medium"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.4 }}
+                      whileHover={{ scale: 1.1, x: 10 }}
+                    >
+                      {item}
+                    </motion.button>
+                  );
+                })}
                 
                 {isSignedIn ? (
                   <motion.div
@@ -444,41 +478,13 @@ export default function HomePage() {
           </motion.div>
         </section>
 
-        {/* About Section */}
-        <AnimatedSection className="py-20 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className={`text-3xl md:text-4xl font-bold text-center text-[${colors.primary}] mb-12`}>Sobre Mí</h2>
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="space-y-6">
-                <p className={`text-lg text-[${colors.text}]`}>
-                  Soy Blanca Stella, psicóloga licenciada con más de 15 años de experiencia ayudando a individuos y parejas a navegar los desafíos de la vida. Mi enfoque combina terapias basadas en evidencia con un estilo cálido y empático que crea un espacio seguro para la sanación y el crecimiento.
-                </p>
-                <p className={`text-lg text-[${colors.text}]`}>
-                  Creo en el poder de la relación terapéutica y trabajo colaborativamente con mis clientes para desarrollar planes de tratamiento personalizados que aborden sus necesidades y objetivos únicos.
-                </p>
-              </div>
-              <motion.div 
-                className="relative h-96"
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-b from-[${colors.background.start}] to-[${colors.background.end}]`} />
-                <Image
-                  src="/logo_nkd.png"
-                  alt="Blanca Stella"
-                  fill
-                  className="object-contain transition-transform duration-300 hover:scale-105 relative z-10"
-                  style={{ mixBlendMode: 'multiply' }}
-                />
-              </motion.div>
-            </div>
-          </div>
-        </AnimatedSection>
+       
 
         {/* Services Section */}
-        <AnimatedSection className="py-20 bg-[#F8F9FA]">
-          <div className="container mx-auto px-4">
+        <AnimatedSection id="servicios" className="py-20 bg-[#F8F9FA]">
+          <div className="container mx-auto px-4 max-w-6xl">
             <h2 className="text-3xl md:text-4xl font-bold text-center text-[#4A6FA5] mb-12">Servicios</h2>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {[
                 {
                   title: "Terapia Individual",
@@ -494,32 +500,35 @@ export default function HomePage() {
                   title: "Terapia Familiar",
                   description: "Ayudando a las familias a navegar desafíos y mejorar sus relaciones y dinámicas.",
                   color: "#E8D5B5" // Warm Beige
+                },
+                {
+                  title: "Terapia Grupal",
+                  description: "Sesiones grupales que fomentan el apoyo mutuo y el crecimiento colectivo en un ambiente seguro.",
+                  color: "#8B5E3C" // Earth Brown
                 }
               ].map((service, index) => (
                 <motion.div
                   key={service.title}
-                  className="bg-white p-8 rounded-xl shadow-lg group hover:shadow-2xl transition-all duration-300"
+                  className="bg-white p-6 rounded-xl shadow-lg group hover:shadow-2xl transition-all duration-300 flex flex-col items-center text-center"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  whileHover={{ 
-                    scale: 1.02,
-                    transition: { duration: 0.2 }
-                  }}
                 >
-                  <div className="relative mb-6">
+                  <div className="relative mb-4">
                     <motion.div 
-                      className="w-16 h-16 rounded-lg"
+                      className="w-12 h-12 rounded-lg"
                       style={{ backgroundColor: service.color }}
                       whileHover={{ 
-                        scale: 1.1,
-                        rotate: 5,
-                        transition: { duration: 0.3 }
+                        scale: 1.05,
+                        transition: { 
+                          duration: 0.2,
+                          ease: "easeOut"
+                        }
                       }}
                     />
                     <motion.div 
-                      className="absolute top-0 left-0 w-16 h-16 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      className="absolute top-0 left-0 w-12 h-12 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       style={{ 
                         backgroundColor: service.color,
                         filter: 'blur(8px)',
@@ -527,8 +536,8 @@ export default function HomePage() {
                       }}
                     />
                   </div>
-                  <h3 className="text-xl font-semibold text-[#4A6FA5] mb-4 group-hover:text-[#6B8C6E] transition-colors duration-300">{service.title}</h3>
-                  <p className="text-[#2E2E2E]">{service.description}</p>
+                  <h3 className="text-lg font-semibold text-[#4A6FA5] mb-2 group-hover:text-[#6B8C6E] transition-colors duration-200">{service.title}</h3>
+                  <p className="text-sm text-[#2E2E2E]">{service.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -536,7 +545,7 @@ export default function HomePage() {
         </AnimatedSection>
 
         {/* Specializations Section */}
-        <AnimatedSection className="py-20 bg-white">
+        <AnimatedSection id="especialidades" className="py-20 bg-white">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl md:text-4xl font-bold text-center text-[#4A6FA5] mb-12">Especialidades</h2>
             <div className="grid md:grid-cols-2 gap-8">
@@ -563,8 +572,20 @@ export default function HomePage() {
           </div>
         </AnimatedSection>
 
+        {/* Resources Section */}
+        <AnimatedSection id="recursos" className="py-20 bg-[#F8F9FA]">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-[#4A6FA5] mb-12">Recursos</h2>
+            <div className="max-w-4xl mx-auto">
+              <p className="text-center text-lg text-[#2E2E2E]">
+                Próximamente: Artículos, recursos y herramientas para apoyar tu bienestar mental.
+              </p>
+            </div>
+          </div>
+        </AnimatedSection>
+
         {/* Contact Section */}
-        <AnimatedSection id="contacto" className="py-20 bg-[#F8F9FA]">
+        <AnimatedSection id="contacto" className="py-20 bg-white">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl md:text-4xl font-bold text-center text-[#4A6FA5] mb-12">Contáctame</h2>
             <div className="max-w-2xl mx-auto">
@@ -636,6 +657,37 @@ export default function HomePage() {
                   {estadoFormulario.message}
                 </div>
               )}
+            </div>
+          </div>
+        </AnimatedSection>
+
+
+         {/* About Section */}
+        <AnimatedSection id="sobre-mí" className="py-20 bg-[#F8F9FA]">
+          <div className="container mx-auto px-4">
+            <h2 className={`text-3xl md:text-4xl font-bold text-center text-[${colors.primary}] mb-12`}>Sobre Mí</h2>
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <p className={`text-lg text-[${colors.text}]`}>
+                  Soy Blanca Stella, psicóloga licenciada con más de 15 años de experiencia ayudando a individuos y parejas a navegar los desafíos de la vida. Mi enfoque combina terapias basadas en evidencia con un estilo cálido y empático que crea un espacio seguro para la sanación y el crecimiento.
+                </p>
+                <p className={`text-lg text-[${colors.text}]`}>
+                  Creo en el poder de la relación terapéutica y trabajo colaborativamente con mis clientes para desarrollar planes de tratamiento personalizados que aborden sus necesidades y objetivos únicos.
+                </p>
+              </div>
+              <motion.div 
+                className="relative h-96"
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-b from-[${colors.background.start}] to-[${colors.background.end}]`} />
+                <Image
+                  src="/logo_nkd.png"
+                  alt="Blanca Stella"
+                  fill
+                  className="object-contain transition-transform duration-300 hover:scale-105 relative z-10"
+                  style={{ mixBlendMode: 'multiply' }}
+                />
+              </motion.div>
             </div>
           </div>
         </AnimatedSection>

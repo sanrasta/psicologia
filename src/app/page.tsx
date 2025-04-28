@@ -2,41 +2,61 @@
 
 import { useState, useEffect, useRef, ReactNode, useCallback } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
-import { motion, AnimatePresence, useAnimation, useInView } from "framer-motion";
+import { motion, AnimatePresence, useAnimation, useInView, useScroll, useTransform } from "framer-motion";
 import Loading from "@/components/Loading";
 import { submitContactForm } from "@/server/actions/contact";
 
-// Updated Logo component with purple colors
+// Color scheme definition
+const colors = {
+  primary: '#4A6FA5',    // Professional Blue
+  secondary: '#6B8C6E',  // Calming Green
+  accent: '#E8D5B5',     // Warm Beige
+  dark: '#8B5E3C',       // Earth Brown
+  text: '#2E2E2E',       // Dark Text
+  background: {
+    start: '#F8F9FA',    // Light Background Start
+    end: '#FFFFFF'       // White Background End
+  }
+} as const;
+
+// Updated Logo component with professional colors
 function Logo() {
   return (
     <div className="flex flex-col items-center space-y-3">
       <div className="flex items-center space-x-1">
-        <div className="w-5 h-5 bg-[#9B5DE5] rounded-sm"></div> {/* Purple */}
-        <div className="w-5 h-5 bg-[#F15BB5] rounded-sm"></div> {/* Pink */}
-        <div className="w-5 h-5 bg-[#00BBF9] rounded-sm"></div> {/* Light Blue */}
-        <div className="w-5 h-5 bg-[#00F5D4] rounded-sm"></div> {/* Teal */}
+        <div className="w-5 h-5 bg-[#4A6FA5] rounded-sm"></div> {/* Professional Blue */}
+        <div className="w-5 h-5 bg-[#6B8C6E] rounded-sm"></div> {/* Calming Green */}
+        <div className="w-5 h-5 bg-[#E8D5B5] rounded-sm"></div> {/* Warm Beige */}
+        <div className="w-5 h-5 bg-[#8B5E3C] rounded-sm"></div> {/* Earth Brown */}
+      </div>
+      <div className="flex flex-col items-center">
+        <span className="text-2xl font-bold text-[#4A6FA5]">
+          Blanca <span className="text-[#6B8C6E]">Stella</span>
+        </span>
+        <span className="text-sm text-[#2E2E2E]/70">Psicóloga Clínica</span>
       </div>
     </div>
   );
 }
 
-// Updated AnimatedText component with purple gradient
+// Updated AnimatedText component with professional colors
 function AnimatedText() {
   return (
     <div className="relative h-20 overflow-hidden">
-      <h1 className="text-center text-4xl md:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#9B5DE5] via-[#F15BB5] to-[#00BBF9] tracking-tight">
-        TRANSFORM YOUR DOG
+      <h1 className="text-center text-4xl md:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-br from-[#4A6FA5] via-[#6B8C6E] to-[#4A6FA5] tracking-tight">
+        BLANCA STELLA
       </h1>
+      <h2 className="text-center text-2xl md:text-3xl font-medium text-[#4A6FA5] mt-4">
+        Psicóloga Clínica
+      </h2>
     </div>
   );
 }
 
 // Scroll-triggered animation section - optimized for performance with reduced scroll impact
-function AnimatedSection({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) {
+function AnimatedSection({ children, delay = 0, className = "", id = "" }: { children: ReactNode; delay?: number; className?: string; id?: string }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { 
     once: true, 
@@ -65,6 +85,7 @@ function AnimatedSection({ children, delay = 0, className = "" }: { children: Re
         delay, 
         ease: "easeOut" 
       }}
+      id={id}
     >
       {children}
     </motion.div>
@@ -72,18 +93,22 @@ function AnimatedSection({ children, delay = 0, className = "" }: { children: Re
 }
 
 export default function HomePage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
   const router = useRouter();
-  const [scrolled, setScrolled] = useState(false);
+  const [desplazado, setDesplazado] = useState(false);
   const { isSignedIn, isLoaded } = useUser();
   const heroRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [formStatus, setFormStatus] = useState<{
+  const [cargando, setCargando] = useState(false);
+  const [estadoFormulario, setEstadoFormulario] = useState<{
     success?: boolean;
     message?: string;
     errors?: Record<string, string[]>;
   } | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+  const referenciaFormulario = useRef<HTMLFormElement>(null);
+  const { scrollY } = useScroll();
+  const scale = useTransform(scrollY, [0, 500], [1, 1.2]);
+  const y = useTransform(scrollY, [0, 500], [-48, 52]);
+  const opacity = useTransform(scrollY, [0, 300], [0.15, 0.05]);
 
   // Only redirect on initial sign in
   useEffect(() => {
@@ -91,7 +116,7 @@ export default function HomePage() {
       const hasVisitedHome = sessionStorage.getItem('hasVisitedHome');
       if (!hasVisitedHome) {
         sessionStorage.setItem('hasVisitedHome', 'true');
-        setIsLoading(true);
+        setCargando(true);
         router.push("/events");
       }
     }
@@ -99,7 +124,7 @@ export default function HomePage() {
 
   // For navigation to events page
   const navigateToEvents = useCallback(() => {
-    setIsLoading(true);
+    setCargando(true);
     router.push("/events");
   }, [router]);
 
@@ -107,7 +132,7 @@ export default function HomePage() {
   const handleScroll = useCallback(() => {
     // Use requestAnimationFrame to optimize scroll performance
     window.requestAnimationFrame(() => {
-      setScrolled(window.scrollY > 100);
+      setDesplazado(window.scrollY > 100);
     });
   }, []);
 
@@ -133,7 +158,7 @@ export default function HomePage() {
 
   // Use useCallback for toggle function
   const toggleMobileMenu = useCallback(() => 
-    setMobileMenuOpen(prev => !prev), []);
+    setMenuMovilAbierto(prev => !prev), []);
     
   // Use useCallback for scroll function
   const scrollToTop = useCallback(() => {
@@ -147,21 +172,35 @@ export default function HomePage() {
     }
   }, []);
 
+  const scrollToContact = useCallback(() => {
+    const contactSection = document.getElementById('contacto');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
+
+  // Add this effect to handle scroll after sign-in
+  useEffect(() => {
+    if (isSignedIn && sessionStorage.getItem('scrollToContact') === 'true') {
+      scrollToContact();
+      sessionStorage.removeItem('scrollToContact');
+    }
+  }, [isSignedIn, scrollToContact]);
+
   return (
     <>
-      {isLoading && <Loading />}
-      <div className="bg-gradient-to-b from-[#F8F0FF] to-white overflow-auto">
+      {cargando && <Loading />}
+      <div className="bg-gradient-to-b from-[#F8F9FA] to-[#FFFFFF] overflow-auto">
         {/* Navbar */}
         <motion.header
-          className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
-            scrolled ? "bg-white/90 backdrop-blur-sm shadow-lg" : "bg-transparent"
+          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+            desplazado ? "bg-white/95 backdrop-blur-sm shadow-lg" : "bg-transparent"
           }`}
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            {/* Left Side: Show UserButton if signed in, otherwise show Logo */}
+          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             <motion.div 
               className="flex items-center space-x-2 cursor-pointer"
               initial={{ opacity: 0, x: -20 }}
@@ -169,31 +208,34 @@ export default function HomePage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               onClick={scrollToTop}
             >
-              {isSignedIn ? <UserButton /> : <Image src="/doggy.png" alt="Logo" width={50} height={50} className="rounded-full" />}
-              <span className="text-2xl font-bold text-[#2E2E2E]">
-                Elite <span className="text-[#9B5DE5]">Dog Training</span>
-              </span>
+              {isSignedIn ? <UserButton /> : <Logo />}
             </motion.div>
 
             {/* Desktop Navigation */}
             <motion.nav 
-              className="hidden md:flex space-x-6 text-lg items-center text-[#2E2E2E]"
+              className="hidden md:flex space-x-6 text-lg items-center text-[#4A6FA5]"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              {["Training", "Tiered Offerings", "Testimonials", "Contact"].map((item, index) => (
+              {["Sobre Mí", "Servicios", "Especialidades", "Recursos", "Contacto"].map((item, index) => (
                 <motion.a
                   key={item}
                   href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="hover:text-[#9B5DE5] relative group font-medium"
+                  className="hover:text-[#6B8C6E] relative group font-medium"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
+                  onClick={(e) => {
+                    if (item === 'Contacto') {
+                      e.preventDefault();
+                      scrollToContact();
+                    }
+                  }}
                 >
                   {item}
                   <motion.span 
-                    className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#9B5DE5] group-hover:w-full transition-all duration-300"
+                    className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#6B8C6E] group-hover:w-full transition-all duration-300"
                     initial={{ width: "0%" }}
                     whileHover={{ width: "100%" }}
                   />
@@ -208,9 +250,9 @@ export default function HomePage() {
                 >
                   <button 
                     onClick={navigateToEvents}
-                    className="bg-gradient-to-r from-[#9B5DE5] to-[#F15BB5] hover:from-[#F15BB5] hover:to-[#9B5DE5] text-white px-6 py-2 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                    className="bg-gradient-to-r from-[#4A6FA5] to-[#6B8C6E] hover:from-[#6B8C6E] hover:to-[#4A6FA5] text-white px-6 py-2 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
-                    Classes
+                    Mis Citas
                   </button>
                 </motion.div>
               ) : (
@@ -220,8 +262,14 @@ export default function HomePage() {
                   transition={{ duration: 0.4, delay: 0.6 }}
                 >
                   <SignInButton>
-                    <button className="bg-gradient-to-r from-[#9B5DE5] to-[#F15BB5] hover:from-[#F15BB5] hover:to-[#9B5DE5] text-white px-6 py-2 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl">
-                      Book Training
+                    <button 
+                      onClick={() => {
+                        // Store the contact section in session storage
+                        sessionStorage.setItem('scrollToContact', 'true');
+                      }}
+                      className="bg-gradient-to-r from-[#4A6FA5] to-[#6B8C6E] hover:from-[#6B8C6E] hover:to-[#4A6FA5] text-white px-6 py-2 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      Agendar Cita
                     </button>
                   </SignInButton>
                 </motion.div>
@@ -235,9 +283,9 @@ export default function HomePage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <button onClick={toggleMobileMenu} className="focus:outline-none text-[#FAF3E0]">
+              <button onClick={toggleMobileMenu} className="focus:outline-none text-[#4A6FA5]">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {mobileMenuOpen ? (
+                  {menuMovilAbierto ? (
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   ) : (
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -250,7 +298,7 @@ export default function HomePage() {
 
         {/* Fullscreen Mobile Menu with Smooth Transition */}
         <AnimatePresence>
-          {mobileMenuOpen && (
+          {menuMovilAbierto && (
             <motion.div
               className="fixed inset-0 bg-[#2E2E2E] text-[#FAF3E0] flex flex-col items-center justify-center z-50"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -272,7 +320,7 @@ export default function HomePage() {
               <nav className="flex flex-col space-y-6 text-3xl">
                 <motion.button
                   onClick={() => {
-                    setMobileMenuOpen(false);
+                    setMenuMovilAbierto(false);
                     scrollToTop();
                   }}
                   className="hover:text-[#9B5DE5] transition-all duration-300 text-3xl font-medium"
@@ -281,15 +329,15 @@ export default function HomePage() {
                   transition={{ delay: 0, duration: 0.4 }}
                   whileHover={{ scale: 1.1, x: 10 }}
                 >
-                  Home
+                  Inicio
                 </motion.button>
                 
-                {["Training", "Programs", "Tiered Offerings", "Testimonials", "Contact"].map((item, index) => (
+                {["Sobre Mí", "Servicios", "Especialidades", "Testimonios", "Contacto"].map((item, index) => (
                   <motion.a
                     key={item}
                     href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
                     className="hover:text-[#9B5DE5] transition-all duration-300"
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={() => setMenuMovilAbierto(false)}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1, duration: 0.4 }}
@@ -307,12 +355,12 @@ export default function HomePage() {
                   >
                     <button 
                       onClick={() => {
-                        setMobileMenuOpen(false);
+                        setMenuMovilAbierto(false);
                         navigateToEvents();
                       }}
                       className="hover:text-[#9B5DE5] transition-all duration-300"
                     >
-                      Classes
+                      Mis Citas
                     </button>
                   </motion.div>
                 ) : (
@@ -324,9 +372,12 @@ export default function HomePage() {
                     <SignInButton>
                       <button 
                         className="hover:text-[#9B5DE5] transition-all duration-300" 
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={() => {
+                          setMenuMovilAbierto(false);
+                          sessionStorage.setItem('scrollToContact', 'true');
+                        }}
                       >
-                        Book Training
+                        Agendar Cita
                       </button>
                     </SignInButton>
                   </motion.div>
@@ -336,713 +387,296 @@ export default function HomePage() {
           )}
         </AnimatePresence>
 
-        {/* Hero Section: Fullscreen background with animated text and particles */}
-        <section id="hero" ref={heroRef} className="relative h-screen flex flex-col items-center justify-between py-24 overflow-hidden">
-          {/* Background elements */}
-          <div className="absolute inset-0 bg-gradient-radial from-[#9B5DE5]/20 to-transparent z-0"></div>
-          
-          <Image
-            src="/doggy.png"
-            alt="Hero Background"
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
-            quality={75}
-            style={{ objectFit: "cover" }}
-            className="opacity-20"
-            loading="eager"
-            fetchPriority="high"
-          />
-          
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-[#F8F0FF]"></div>
-
-          {/* Content restructured for better positioning */}
-          <div className="relative z-10 flex flex-col items-center justify-between h-full w-full px-4 max-w-5xl mx-auto">
-            {/* Empty space at top to push logo to center */}
-            <div className="flex-grow"></div>
-            
-            {/* Logo in center of screen */}
-            <div className="mb-12">
-              <Logo />
-            </div>
-            
-            {/* Lower text section */}
-            <div className="flex flex-col items-center mb-16">
-              <div className="mb-8">
-                <AnimatedText />
-              </div>
-              
-            
-              
-              <div className="flex flex-col md:flex-row gap-4 items-center">
-          
-                <div className="hover:scale-105 transition-transform duration-300">
-                  <SignInButton>
-                    <Button className="bg-gradient-to-r from-[#9B5DE5] to-[#F15BB5] hover:from-[#F15BB5] hover:to-[#9B5DE5] text-white text-lg md:text-2xl px-8 md:px-10 py-6 md:py-7 rounded-xl shadow-lg hover:shadow-xl font-bold transition-all duration-300">
-                      Start Dog Training Today!
-                    </Button>
-                  </SignInButton>
-                </div>
-
-                <Link href="/courses">
-                  <Button className="bg-gradient-to-r from-[#00BBF9] to-[#00F5D4] hover:from-[#00F5D4] hover:to-[#00BBF9] text-white text-lg md:text-2xl px-8 md:px-10 py-6 md:py-7 rounded-xl shadow-lg hover:shadow-xl font-bold transition-all duration-300">
-                    View Courses
-                  </Button>
-                </Link>
-
-                <Link href="/games-club">
-                  <Button className="bg-gradient-to-r from-[#F15BB5] to-[#9B5DE5] hover:from-[#9B5DE5] hover:to-[#F15BB5] text-white text-lg md:text-2xl px-8 md:px-10 py-6 md:py-7 rounded-xl shadow-lg hover:shadow-xl font-bold transition-all duration-300">
-                    Join Games Club
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Conversion Section with animations - optimized for performance */}
-        <section id="conversion" className="py-28 relative overflow-hidden">
-          <div 
-            className="absolute -top-20 -left-20 w-80 h-80 bg-[#00BBF9]/30 rounded-full blur-3xl"
-          />
-          <div
-            className="absolute -bottom-40 -right-20 w-96 h-96 bg-[#F15BB5]/30 rounded-full blur-3xl"
-          />
-          
-          <div className="container mx-auto px-4 text-center relative z-10">
-            <AnimatedSection>
-              <h2 className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight text-[#2E2E2E]">
-                Transform Your <span className="text-[#9B5DE5] relative">Dog&apos;s Behavior
-                  <span 
-                    className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#9B5DE5] to-[#F15BB5]"
-                  />
-                </span>
-              </h2>
-            </AnimatedSection>
-            
-            <AnimatedSection delay={0.2}>
-              <p className="max-w-2xl mx-auto text-[#2E2E2E] text-xl mb-12 leading-relaxed">
-                Our experienced trainers use positive reinforcement techniques to ensure your dog learns in a safe and enjoyable environment. Book a session today and start your journey to a well-behaved companion.
-              </p>
-            </AnimatedSection>
-            
-            <AnimatedSection delay={0.4}>
-              <div className="hover:scale-105 hover:-translate-y-1 transition-all duration-200">
-                <Link href="#contact">
-                  <Button className="bg-gradient-to-br from-[#9B5DE5] to-[#F15BB5] hover:from-[#F15BB5] hover:to-[#9B5DE5] text-[#FAF3E0] py-6 px-4 md:px-10 rounded-full text-base md:text-xl font-semibold shadow-lg transition-all duration-300 w-full md:w-auto">
-                    <span className="block px-2 md:px-0">
-                      <span className="hidden md:inline">Schedule Your Free Evaluation Session</span>
-                      <span className="md:hidden">Free Evaluation Session</span>
-                    </span>
-                  </Button>
-                </Link>
-              </div>
-            </AnimatedSection>
-          </div>
-        </section>
-
-        {/* Training Programs Section with animations */}
-        <section id="training" className="py-28 bg-gradient-to-b from-white to-[#F8F0FF] relative overflow-hidden">
-          <div className="container mx-auto px-4">
-            <AnimatedSection>
-              <div className="text-center mb-16">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8 }}
-                >
-                  <h2 className="text-4xl md:text-6xl font-bold relative inline-block text-[#2E2E2E]">
-                    Our <span className="text-[#9B5DE5]">Training Programs</span>
-                    <motion.div 
-                      className="absolute -bottom-3 left-0 h-1 bg-gradient-to-r from-[#9B5DE5] to-[#F15BB5]"
-                      initial={{ width: 0 }}
-                      whileInView={{ width: "100%" }}
-                      transition={{ duration: 1, delay: 0.5 }}
-                    />
-                  </h2>
-                </motion.div>
-                <p className="text-[#2E2E2E] text-xl mt-6">
-                  Elevate your dog&apos;s behavior with personalized training designed for{" "}
-                  <span className="font-semibold text-[#9B5DE5]">lasting results</span>.
-                </p>
-              </div>
-            </AnimatedSection>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                {
-                  title: "Basic Obedience",
-                  description: "Foundation training for puppies and adult dogs focusing on essential commands and good manners.",
-                  color: "#9B5DE5",
-                  rgbColor: "155, 93, 229"
-                },
-                {
-                  title: "Behavior Modification",
-                  description: "Specialized training to address anxiety, aggression, fear, and other challenging behaviors.",
-                  color: "#F15BB5",
-                  rgbColor: "241, 91, 181"
-                },
-                {
-                  title: "Advanced Training",
-                  description: "Take your dog&apos;s skills to the next level with complex commands, off-leash reliability, and tricks.",
-                  color: "#00BBF9",
-                  rgbColor: "0, 187, 249"
-                }
-              ].map((service, index) => (
-                <AnimatedSection key={service.title} delay={0.2 * index}>
-                  <motion.div 
-                    className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl h-full group cursor-pointer shadow-lg hover:shadow-xl"
-                    whileHover={{ 
-                      y: -10,
-                      boxShadow: `0 10px 30px -5px rgba(${service.rgbColor},0.3)`
-                    }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <motion.div 
-                      className="w-16 h-16 rounded-xl mb-6 flex items-center justify-center"
-                      style={{ backgroundColor: `${service.color}20` }}
-                      animate={{ rotate: [0, 10, 0, -10, 0] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <div className="w-8 h-8 rounded-lg" style={{ backgroundColor: service.color }}></div>
-                    </motion.div>
-                    
-                    <h3 className="text-2xl font-bold mb-4 text-[#2E2E2E]">
-                      <span className="inline-block transition-all duration-300 first-word" style={{ color: service.color }}>
-                        {service.title.split(" ")[0]}
-                      </span>{" "}
-                      <span>
-                        {service.title.split(" ").slice(1).join(" ")}
-                      </span>
-                    </h3>
-                    <p className="text-[#2E2E2E]/70 text-lg">
-                      {service.description}
-                    </p>
-                  </motion.div>
-                </AnimatedSection>
-              ))}
-            </div>
-          </div>
-        </section>
-
-      
-         {/* Tiered Offerings Section */}
-      <section id="tiered-offerings" className="py-28 bg-gradient-to-b from-white to-[#F8F0FF] relative overflow-hidden">
-        <div className="container mx-auto px-4">
-          <AnimatedSection>
-            <div className="text-center mb-16">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8 }}
-              >
-                <h2 className="text-4xl md:text-6xl font-bold relative inline-block text-[#2E2E2E]">
-                  Tiered <span className="text-[#9B5DE5]">Offerings</span>
-                  <motion.div 
-                    className="absolute -bottom-3 left-0 h-1 bg-gradient-to-r from-[#9B5DE5] to-[#F15BB5]"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: "100%" }}
-                    transition={{ duration: 1, delay: 0.5 }}
-                  />
-                </h2>
-              </motion.div>
-              <p className="text-[#2E2E2E] text-xl mt-6">
-                Choose the perfect training solution that fits your needs and lifestyle
-              </p>
-            </div>
-          </AnimatedSection>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Hybrid Board Training",
-                price: "$2,000",
-                duration: "2-4 weeks",
-                description: "Comprehensive board & train package for intensive learning and behavior modification.",
-                color: "#9B5DE5",
-                rgbColor: "155, 93, 229"
-              },
-              {
-                title: "E-Exchange Program",
-                price: "Skill Trade",
-                duration: "Flexible",
-                description: "Exchange your skills for dog training services. Perfect for creative professionals.",
-                color: "#F15BB5",
-                rgbColor: "241, 91, 181"
-              },
-              {
-                title: "The Regulars",
-                price: "Subscription",
-                duration: "Ongoing",
-                description: "Join our community for continuous learning, content, and support. Open to everyone.",
-                color: "#00BBF9",
-                rgbColor: "0, 187, 249"
-              }
-            ].map((tier, index) => (
-              <AnimatedSection key={tier.title} delay={0.2 * index}>
-                <motion.div 
-                  className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl h-full group cursor-pointer shadow-lg hover:shadow-xl"
-                  whileHover={{ 
-                    y: -10,
-                    boxShadow: `0 10px 30px -5px rgba(${tier.rgbColor},0.3)`
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <motion.div 
-                    className="w-16 h-16 rounded-xl mb-6 flex items-center justify-center"
-                    style={{ backgroundColor: `${tier.color}20` }}
-                    animate={{ rotate: [0, 10, 0, -10, 0] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <div className="w-8 h-8 rounded-lg" style={{ backgroundColor: tier.color }}></div>
-                  </motion.div>
-                  
-                  <h3 className="text-2xl font-bold mb-2 text-[#2E2E2E]">
-                    {tier.title}
-                  </h3>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-xl font-semibold" style={{ color: tier.color }}>{tier.price}</span>
-                    <span className="text-[#2E2E2E]/60">•</span>
-                    <span className="text-[#2E2E2E]/60">{tier.duration}</span>
-                  </div>
-                  <p className="text-[#2E2E2E]/70 text-lg">
-                    {tier.description}
-                  </p>
-                </motion.div>
-              </AnimatedSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
-        {/* Contact Section - Premium Design */}
-        <section id="contact" className="py-32 relative overflow-hidden">
-          {/* Premium background elements */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#00BBF9]/20 to-[#F8F0FF] z-0"></div>
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#9B5DE5]/20 to-transparent"></div>
-          
-          {/* Animated accent elements - optimized for scroll performance */}
+        {/* Hero Section */}
+        <section ref={heroRef} className="min-h-screen flex flex-col justify-center items-center px-4 pt-32 pb-20 relative overflow-hidden">
           <motion.div 
-            className="absolute -top-40 right-0 w-96 h-96 rounded-full bg-[#9B5DE5]/5 blur-3xl"
-            initial={{ opacity: 0.3 }}
-            animate={{ opacity: 0.5 }}
-            transition={{ duration: 5, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
-          />
+            className="absolute inset-0 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2, duration: 0.5 }}
+            style={{ scale, y }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-[#F8F9FA] to-[#FFFFFF]" />
+            <motion.div 
+              className="relative w-[400px] h-[400px]"
+              style={{ opacity }}
+            >
+              <Image 
+                src="/logo_nkd.png" 
+                alt="Blanca Stella" 
+                fill
+                className="object-contain"
+                style={{ 
+                  mixBlendMode: 'multiply',
+                  backgroundColor: 'transparent'
+                }}
+              />
+            </motion.div>
+          </motion.div>
+          
           <motion.div 
-            className="absolute bottom-0 -left-40 w-96 h-96 rounded-full bg-[#F15BB5]/10 blur-3xl"
-            initial={{ opacity: 0.2 }}
-            animate={{ opacity: 0.4 }}
-            transition={{ duration: 6, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
-          />
-          
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-[#2E2E2E]">
-                Get <span className="text-[#9B5DE5]">Started</span>
-              </h2>
-              <p className="mt-4 text-[#2E2E2E]/70 max-w-xl mx-auto">
-                Ready to transform your dog&apos;s behavior? Reach out to us today to discuss your training goals and schedule your free evaluation session.
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-8 items-start">
-              {/* Left side info cards */}
-              <AnimatedSection delay={0.1}>
-                <motion.div 
-                  className="bg-gradient-to-br from-white to-[#F8F0FF] backdrop-blur-sm p-8 rounded-xl border border-[#9B5DE5]/10 h-full shadow-xl"
-                  whileHover={{ scale: 1.01 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="space-y-8">
-                    <div>
-                      <h3 className="text-xl font-semibold text-[#2E2E2E] mb-2 flex items-center">
-                        <motion.div 
-                          initial={{ rotateY: 0 }}
-                          animate={{ rotateY: 360 }}
-                          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                          className="mr-3 text-[#9B5DE5]"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </motion.div>
-                        Why Choose Us
-                      </h3>
-                      <p className="text-[#2E2E2E]/80 leading-relaxed">
-                        Our elite dog training team brings over 20 years of canine behavior experience with a personalized approach that guarantees lasting results for dogs of all ages and breeds.
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-xl font-semibold text-[#2E2E2E] mb-2 flex items-center">
-                        <motion.div 
-                          animate={{ rotate: [0, 5, -5, 5, 0] }}
-                          transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
-                          className="mr-3 text-[#9B5DE5]"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                        </motion.div>
-                        Get in Touch
-                      </h3>
-                      <div className="space-y-3 pl-9">
-                        <p className="text-[#2E2E2E]">contact@elitedogtraining.com</p>
-                        <p className="text-[#2E2E2E]">+1 (555) 123-4567</p>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-4">
-                      <h3 className="text-xl font-semibold text-[#2E2E2E] mb-3 flex items-center">
-                        <motion.div 
-                          animate={{ y: [0, -5, 0] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                          className="mr-3 text-[#9B5DE5]"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </motion.div>
-                        Response Time
-                      </h3>
-                      <div className="flex items-center gap-2 pl-9">
-                        <div className="w-full bg-[#00BBF9]/50 rounded-full h-2">
-                          <motion.div 
-                            className="bg-gradient-to-r from-[#9B5DE5] to-[#F15BB5] h-2 rounded-full"
-                            initial={{ width: "0%" }}
-                            whileInView={{ width: "90%" }}
-                            transition={{ duration: 1.5, ease: "easeOut" }}
-                          />
-                        </div>
-                        <span className="text-[#2E2E2E] font-medium">24h</span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatedSection>
-              
-              {/* Right side form */}
-              <AnimatedSection delay={0.3}>
-                <motion.form 
-                  ref={formRef}
-                  action={async (formData) => {
-                    const result = await submitContactForm(formData);
-                    setFormStatus(result);
-                    if (result.success) {
-                      formRef.current?.reset();
-                    }
-                  }}
-                  className="bg-gradient-to-br from-white to-[#F8F0FF] backdrop-blur-sm p-8 rounded-xl border border-[#9B5DE5]/10 shadow-xl"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
-                >
-                  {formStatus && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`p-4 mb-6 rounded-lg ${
-                        formStatus.success 
-                          ? "bg-green-50 text-green-700 border border-green-200" 
-                          : "bg-red-50 text-red-700 border border-red-200"
-                      }`}
-                    >
-                      <p className="font-medium text-sm">{formStatus.message}</p>
-                    </motion.div>
-                  )}
-                  
-                  <div className="space-y-6">
-                    <motion.div
-                      initial={{ x: -20, opacity: 0 }}
-                      whileInView={{ x: 0, opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <label htmlFor="name" className="block text-sm font-medium text-[#2E2E2E] mb-1">
-                        Full Name
-                      </label>
-                      <motion.div 
-                        whileHover={{ scale: 1.01 }} 
-                        whileTap={{ scale: 0.99 }}
-                        className="relative"
-                      >
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#2E2E2E]/60">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                          </svg>
-                        </span>
-                        <input
-                          type="text"
-                          id="name"
-                          name="name"
-                          placeholder="Your Name"
-                          className="pl-10 block w-full rounded-md border-[#9B5DE5]/20 bg-white px-4 py-3 text-[#2E2E2E] placeholder-[#2E2E2E]/40 focus:border-[#9B5DE5] focus:ring-1 focus:ring-[#9B5DE5] transition-all duration-200"
-                          required
-                        />
-                        {formStatus?.errors?.name && (
-                          <p className="text-red-600 text-xs mt-1">{formStatus.errors.name[0]}</p>
-                        )}
-                      </motion.div>
-                    </motion.div>
-                    
-                    <motion.div
-                      initial={{ x: -20, opacity: 0 }}
-                      whileInView={{ x: 0, opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.1 }}
-                    >
-                      <label htmlFor="email" className="block text-sm font-medium text-[#2E2E2E] mb-1">
-                        Email Address
-                      </label>
-                      <motion.div 
-                        whileHover={{ scale: 1.01 }} 
-                        whileTap={{ scale: 0.99 }}
-                        className="relative"
-                      >
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#2E2E2E]/60">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                          </svg>
-                        </span>
-                        <input
-                          type="email"
-                          id="email"
-                          name="email"
-                          placeholder="you@example.com"
-                          className="pl-10 block w-full rounded-md border-[#9B5DE5]/20 bg-white px-4 py-3 text-[#2E2E2E] placeholder-[#2E2E2E]/40 focus:border-[#9B5DE5] focus:ring-1 focus:ring-[#9B5DE5] transition-all duration-200"
-                          required
-                        />
-                        {formStatus?.errors?.email && (
-                          <p className="text-red-600 text-xs mt-1">{formStatus.errors.email[0]}</p>
-                        )}
-                      </motion.div>
-                    </motion.div>
-                    
-                    <motion.div
-                      initial={{ x: -20, opacity: 0 }}
-                      whileInView={{ x: 0, opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
-                    >
-                      <label htmlFor="phone" className="block text-sm font-medium text-[#2E2E2E] mb-1">
-                        Phone (Optional)
-                      </label>
-                      <motion.div 
-                        whileHover={{ scale: 1.01 }} 
-                        whileTap={{ scale: 0.99 }}
-                        className="relative"
-                      >
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#2E2E2E]/60">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.948.684l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                          </svg>
-                        </span>
-                        <input
-                          type="tel"
-                          id="phone"
-                          name="phone"
-                          placeholder="(555) 123-4567"
-                          className="pl-10 block w-full rounded-md border-[#9B5DE5]/20 bg-white px-4 py-3 text-[#2E2E2E] placeholder-[#2E2E2E]/40 focus:border-[#9B5DE5] focus:ring-1 focus:ring-[#9B5DE5] transition-all duration-200"
-                        />
-                      </motion.div>
-                    </motion.div>
-                    
-                    <motion.div
-                      initial={{ x: -20, opacity: 0 }}
-                      whileInView={{ x: 0, opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.3 }}
-                    >
-                      <label htmlFor="message" className="block text-sm font-medium text-[#2E2E2E] mb-1">
-                        Message
-                      </label>
-                      <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                        <textarea
-                          id="message"
-                          name="message"
-                          rows={4}
-                          placeholder="Tell us about your dog and your training goals"
-                          className="block w-full rounded-md border-[#9B5DE5]/20 bg-white px-4 py-3 text-[#2E2E2E] placeholder-[#2E2E2E]/40 focus:border-[#9B5DE5] focus:ring-1 focus:ring-[#9B5DE5] transition-all duration-200"
-                          required
-                        ></textarea>
-                        {formStatus?.errors?.message && (
-                          <p className="text-red-600 text-xs mt-1">{formStatus.errors.message[0]}</p>
-                        )}
-                      </motion.div>
-                    </motion.div>
-                    
-                    <motion.div
-                      initial={{ y: 20, opacity: 0 }}
-                      whileInView={{ y: 0, opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.4 }}
-                      className="pt-4"
-                    >
-                      <motion.button
-                        type="submit"
-                        whileHover={{ 
-                          scale: 1.03, 
-                          boxShadow: "0 10px 25px -5px rgba(155, 93, 229, 0.4)" 
-                        }}
-                        whileTap={{ scale: 0.97 }}
-                        className="w-full bg-gradient-to-r from-[#9B5DE5] to-[#F15BB5] hover:from-[#F15BB5] hover:to-[#9B5DE5] py-4 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 relative overflow-hidden group text-[#FAF3E0]"
-                      >
-                        <motion.span
-                          className="absolute inset-0 w-full h-full bg-gradient-to-r from-[#9B5DE5]/90 to-[#F15BB5]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        />
-                        <motion.span 
-                          className="relative flex items-center justify-center"
-                        >
-                          Send Message
-                          <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                          </svg>
-                        </motion.span>
-                      </motion.button>
-                      
-                      <p className="text-center text-sm text-[#2E2E2E]/60 mt-4">
-                        We&apos;ll respond to your inquiry within 24 hours
-                      </p>
-                    </motion.div>
-                  </div>
-                </motion.form>
-              </AnimatedSection>
-            </div>
-          </div>
-        </section>
-
-
-  {/* Testimonials Section - Professional Design */}
-  <section id="testimonials" className="py-28 relative overflow-hidden">
-          {/* Subtle background element */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#9B5DE5]/10 to-[#F8F0FF] z-0"></div>
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#9B5DE5]/20 to-transparent"></div>
-          
-          <div className="container mx-auto px-4 relative z-10">
-            <AnimatedSection>
-              <div className="flex flex-col items-center mb-16">
-                <div className="inline-block mb-3">
-                  <div className="w-10 h-1 bg-[#9B5DE5] mx-auto"></div>
-                </div>
-                <h2 className="text-4xl md:text-5xl font-bold text-[#2E2E2E]">
-                  Client <span className="text-[#9B5DE5]">Testimonials</span>
-                </h2>
-                <p className="text-[#2E2E2E]/80 text-lg mt-4 max-w-2xl text-center">
-                  Discover what dog owners have to say about their transformative experiences with our professional training services.
-                </p>
-              </div>
-            </AnimatedSection>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <AnimatedSection delay={0.1}>
-                <motion.div 
-                  className="bg-gradient-to-br from-white to-[#F8F0FF] rounded-xl p-8 relative overflow-hidden border border-[#9B5DE5]/10 shadow-xl"
-                  whileHover={{ y: -5, boxShadow: "0 20px 40px -15px rgba(155, 93, 229, 0.15)" }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="absolute top-0 right-0 w-40 h-40 -m-16 opacity-10">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-[#9B5DE5]">
-                      <path d="M9 7.5l-4.5 4.5h3l-6 9h7.5l6-9h-3l4.5-4.5h-7.5z" fill="currentColor"/>
-                    </svg>
-                  </div>
-                  
-                  <div className="text-xl text-[#2E2E2E]/80 font-light italic leading-relaxed mb-8">
-                    &quot;<span className="text-[#2E2E2E] font-medium">Santiago&apos;s expertise in dog training is unmatched. He helped transform my reactive dog into a well-behaved companion.&quot;</span>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#9B5DE5]/20 flex-shrink-0">
-                      <Image
-                        src="/doggy.png"
-                        alt="Client 1"
-                        width={56}
-                        height={56}
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="ml-4">
-                      <p className="font-semibold text-[#2E2E2E] text-lg">Sarah Johnson</p>
-                      <div className="flex items-center">
-                        <p className="text-[#2E2E2E]/60 text-sm">Dog Owner • German Shepherd</p>
-                        <div className="flex ml-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <svg key={star} className="w-3 h-3 text-[#F15BB5]" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                            </svg>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatedSection>
-              
-              <AnimatedSection delay={0.3}>
-                <motion.div 
-                  className="bg-gradient-to-br from-white to-[#F8F0FF] rounded-xl p-8 relative overflow-hidden border border-[#9B5DE5]/10 shadow-xl"
-                  whileHover={{ y: -5, boxShadow: "0 20px 40px -15px rgba(155, 93, 229, 0.15)" }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="absolute top-0 right-0 w-40 h-40 -m-16 opacity-10">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-[#9B5DE5]">
-                      <path d="M9 7.5l-4.5 4.5h3l-6 9h7.5l6-9h-3l4.5-4.5h-7.5z" fill="currentColor"/>
-                    </svg>
-                  </div>
-                  
-                  <div className="text-xl text-[#2E2E2E]/80 font-light italic leading-relaxed mb-8">
-                    &quot;<span className="text-[#2E2E2E] font-medium">The personalized approach</span> at <span className="text-[#9B5DE5]">Elite Dog Training</span> helped transform my anxious rescue into a confident, obedient companion. The trainers&apos; patience and expertise made all the difference in our lives.&quot;
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#9B5DE5]/20 flex-shrink-0">
-                      <Image
-                        src="/doggy.png"
-                        alt="Client 2"
-                        width={56}
-                        height={56}
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="ml-4">
-                      <p className="font-semibold text-[#2E2E2E] text-lg">Michael Thompson</p>
-                      <div className="flex items-center">
-                        <p className="text-[#2E2E2E]/60 text-sm">Dog Owner • Golden Retriever</p>
-                        <div className="flex ml-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <svg key={star} className="w-3 h-3 text-[#F15BB5]" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                            </svg>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatedSection>
-            </div>
-          </div>
+            className="relative z-10 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <AnimatedText />
+            <motion.p 
+              className="text-center text-lg md:text-xl text-[#4A6FA5] max-w-2xl mx-auto mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              Ofreciendo servicios psicológicos compasivos y profesionales para ayudarte a navegar los desafíos de la vida y lograr crecimiento personal.
+            </motion.p>
+            <motion.div 
+              className="mt-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <SignInButton>
+                <button className="bg-gradient-to-r from-[#4A6FA5] to-[#6B8C6E] hover:from-[#6B8C6E] hover:to-[#4A6FA5] text-white px-8 py-3 rounded-full text-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl">
+                  Agenda Tu Primera Sesión
+                </button>
+              </SignInButton>
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* About Section */}
-        <section id="about" className="py-20">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[#2E2E2E]">
-              About <span className="text-[#9B5DE5]">Us</span>
-            </h2>
-            <p className="max-w-2xl mx-auto text-[#2E2E2E]/80 text-lg">
-              At <span className="font-semibold text-[#9B5DE5]">Elite Dog Training</span>, we blend expert canine behavior knowledge with a passion for strengthening the human-dog bond.
-              Our mission is to empower both dogs and their owners to achieve harmonious relationships through proven training techniques.
-              Experience a transformative approach to dog training that delivers real, lasting results.
-            </p>
+        <AnimatedSection className="py-20 bg-white">
+          <div className="container mx-auto px-4">
+            <h2 className={`text-3xl md:text-4xl font-bold text-center text-[${colors.primary}] mb-12`}>Sobre Mí</h2>
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <p className={`text-lg text-[${colors.text}]`}>
+                  Soy Blanca Stella, psicóloga licenciada con más de 15 años de experiencia ayudando a individuos y parejas a navegar los desafíos de la vida. Mi enfoque combina terapias basadas en evidencia con un estilo cálido y empático que crea un espacio seguro para la sanación y el crecimiento.
+                </p>
+                <p className={`text-lg text-[${colors.text}]`}>
+                  Creo en el poder de la relación terapéutica y trabajo colaborativamente con mis clientes para desarrollar planes de tratamiento personalizados que aborden sus necesidades y objetivos únicos.
+                </p>
+              </div>
+              <motion.div 
+                className="relative h-96"
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-b from-[${colors.background.start}] to-[${colors.background.end}]`} />
+                <Image
+                  src="/logo_nkd.png"
+                  alt="Blanca Stella"
+                  fill
+                  className="object-contain transition-transform duration-300 hover:scale-105 relative z-10"
+                  style={{ mixBlendMode: 'multiply' }}
+                />
+              </motion.div>
+            </div>
           </div>
-        </section>
+        </AnimatedSection>
 
-         {/* Footer */}
-         <footer className="py-8 bg-[#2E2E2E]">
-          <div className="container mx-auto px-4 text-center text-[#FAF3E0]/70">
-            &copy; {new Date().getFullYear()} Elite Dog Training. All rights reserved.
+        {/* Services Section */}
+        <AnimatedSection className="py-20 bg-[#F8F9FA]">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-[#4A6FA5] mb-12">Servicios</h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  title: "Terapia Individual",
+                  description: "Sesiones individuales enfocadas en el crecimiento personal, salud mental y bienestar emocional.",
+                  color: "#4A6FA5" // Professional Blue
+                },
+                {
+                  title: "Terapia de Pareja",
+                  description: "Apoyo para parejas que buscan mejorar la comunicación, resolver conflictos y fortalecer su relación.",
+                  color: "#6B8C6E" // Calming Green
+                },
+                {
+                  title: "Terapia Familiar",
+                  description: "Ayudando a las familias a navegar desafíos y mejorar sus relaciones y dinámicas.",
+                  color: "#E8D5B5" // Warm Beige
+                }
+              ].map((service, index) => (
+                <motion.div
+                  key={service.title}
+                  className="bg-white p-8 rounded-xl shadow-lg group hover:shadow-2xl transition-all duration-300"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ 
+                    scale: 1.02,
+                    transition: { duration: 0.2 }
+                  }}
+                >
+                  <div className="relative mb-6">
+                    <motion.div 
+                      className="w-16 h-16 rounded-lg"
+                      style={{ backgroundColor: service.color }}
+                      whileHover={{ 
+                        scale: 1.1,
+                        rotate: 5,
+                        transition: { duration: 0.3 }
+                      }}
+                    />
+                    <motion.div 
+                      className="absolute top-0 left-0 w-16 h-16 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{ 
+                        backgroundColor: service.color,
+                        filter: 'blur(8px)',
+                        transform: 'translate(4px, 4px)'
+                      }}
+                    />
+                  </div>
+                  <h3 className="text-xl font-semibold text-[#4A6FA5] mb-4 group-hover:text-[#6B8C6E] transition-colors duration-300">{service.title}</h3>
+                  <p className="text-[#2E2E2E]">{service.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </AnimatedSection>
+
+        {/* Specializations Section */}
+        <AnimatedSection className="py-20 bg-white">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-[#4A6FA5] mb-12">Especialidades</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              {[
+                "Ansiedad y Depresión",
+                "Problemas de Relación",
+                "Trauma y TEPT",
+                "Transiciones de Vida",
+                "Manejo del Estrés",
+                "Autoestima y Crecimiento Personal"
+              ].map((specialization, index) => (
+                <motion.div
+                  key={specialization}
+                  className="bg-[#F8F9FA] p-6 rounded-lg"
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <h3 className="text-lg font-medium text-[#6B8C6E]">{specialization}</h3>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </AnimatedSection>
+
+        {/* Contact Section */}
+        <AnimatedSection id="contacto" className="py-20 bg-[#F8F9FA]">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-[#4A6FA5] mb-12">Contáctame</h2>
+            <div className="max-w-2xl mx-auto">
+              {isSignedIn ? (
+                <form ref={referenciaFormulario} onSubmit={async (e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  const result = await submitContactForm(formData);
+                  setEstadoFormulario(result);
+                  if (result.success) {
+                    referenciaFormulario.current?.reset();
+                  }
+                }} className="space-y-6">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-[#4A6FA5] mb-2">Nombre</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      required
+                      className="w-full px-4 py-2 rounded-lg border border-[#4A6FA5]/20 focus:border-[#4A6FA5] focus:ring-1 focus:ring-[#4A6FA5] outline-none transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-[#4A6FA5] mb-2">Correo Electrónico</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      required
+                      className="w-full px-4 py-2 rounded-lg border border-[#4A6FA5]/20 focus:border-[#4A6FA5] focus:ring-1 focus:ring-[#4A6FA5] outline-none transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium text-[#4A6FA5] mb-2">Mensaje</label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      required
+                      rows={4}
+                      className="w-full px-4 py-2 rounded-lg border border-[#4A6FA5]/20 focus:border-[#4A6FA5] focus:ring-1 focus:ring-[#4A6FA5] outline-none transition-colors"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-[#4A6FA5] to-[#6B8C6E] hover:from-[#6B8C6E] hover:to-[#4A6FA5] text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
+                    Enviar Mensaje
+                  </button>
+                </form>
+              ) : (
+                <div className="text-center space-y-4">
+                  <p className="text-lg text-[#4A6FA5]">Por favor, inicia sesión para enviar un mensaje.</p>
+                  <SignInButton>
+                    <button 
+                      onClick={() => {
+                        // Store the contact section in session storage
+                        sessionStorage.setItem('scrollToContact', 'true');
+                      }}
+                      className="bg-gradient-to-r from-[#4A6FA5] to-[#6B8C6E] hover:from-[#6B8C6E] hover:to-[#4A6FA5] text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      Iniciar Sesión
+                    </button>
+                  </SignInButton>
+                </div>
+              )}
+              {estadoFormulario && (
+                <div className={`mt-4 p-4 rounded-lg ${estadoFormulario.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  {estadoFormulario.message}
+                </div>
+              )}
+            </div>
+          </div>
+        </AnimatedSection>
+
+        {/* Footer */}
+        <footer className="bg-[#4A6FA5] text-white py-12">
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-3 gap-8">
+              <div>
+                <div className="flex items-center space-x-3 mb-4">
+                  <div 
+                    className="w-[65px] h-[65px] rounded-full bg-cover bg-center bg-no-repeat"
+                    style={{ backgroundImage: 'url("/logo_round.png")' }}
+                  />
+                  <h3 className="text-xl font-semibold">Blanca Stella</h3>
+                </div>
+                <p className="text-white/80">Psicóloga Clínica</p>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-4">Contacto</h3>
+                <p className="text-white/80">Correo: contacto@blancastella.com</p>
+                <p className="text-white/80">Teléfono: (555) 123-4567</p>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-4">Ubicación</h3>
+                <p className="text-white/80">Calle Terapia 123</p>
+                <p className="text-white/80">Ciudad, Estado 12345</p>
+              </div>
+            </div>
+            <div className="mt-8 pt-8 border-t border-white/20 text-center text-white/60">
+              <div className="flex items-center justify-center space-x-3 mb-4">
+                <div 
+                  className="w-[45px] h-[45px] rounded-full bg-cover bg-center bg-no-repeat"
+                  style={{ backgroundImage: 'url("/logo_round.png")' }}
+                />
+                <p>&copy; {new Date().getFullYear()} Blanca Stella. Todos los derechos reservados.</p>
+              </div>
+            </div>
           </div>
         </footer>
-              
       </div>
-
-     
     </>
   );
 }

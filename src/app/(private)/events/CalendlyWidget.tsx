@@ -11,8 +11,8 @@ interface CalendlyWidgetProps {
 
 export function CalendlyWidget({ name, description, duration, url }: CalendlyWidgetProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-      <h3 className="text-xl font-semibold text-[#5C4033] mb-2">{name}</h3>
+    <div className="bg-white rounded-xl shadow-lg p-6 border border-[#4A6FA5]/10">
+      <h3 className="text-xl font-semibold text-[#4A6FA5] mb-2">{name}</h3>
       <p className="text-[#2E2E2E] mb-4">{description}</p>
       <p className="text-sm text-[#2E2E2E]/70 mb-4">Duration: {duration}</p>
       <div className="h-[600px]">
